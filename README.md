@@ -1,5 +1,7 @@
 # Steal Defect Detection
 
+Pipeline for Kaggle Competition [Severstal: Steel Defect Detection](https://www.kaggle.com/c/severstal-steel-defect-detection)
+
 For training run: 
 ```shell script
 python train.py \
