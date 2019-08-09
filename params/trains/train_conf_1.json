@@ -1,0 +1,20 @@
+{
+  "optimizer" : {
+    "class" : "Adam",
+    "params" : {
+      "lr" : 0.001
+    }
+  },
+  "epochs" : 30,
+  "loss" : "mse",
+  "dataset" : {
+    "class" : "StealDataset",
+    "params" : {
+      "base_path" : "./input/severstal-steel-defect-detection/",
+      "subset" : "train"
+    }
+  },
+  "batch_size" : 30,
+  "test_split" : 0.1,
+  "gpu" : true
+}
