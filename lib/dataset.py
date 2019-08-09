@@ -1,10 +1,7 @@
-from torch.utils.data import DataLoader, Dataset
-import cv2
+from torch.utils.data import Dataset
 from PIL import Image
 from torchvision import transforms
-import pandas as pd
 from lib.mask_utils import rle2mask
-import os
 from lib.transform import data_transform
 
 

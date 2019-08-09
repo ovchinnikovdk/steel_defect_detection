@@ -1,26 +1,35 @@
 import json
-from lib.models import SimpleCNN
+from lib.models import SimpleCNN, UNet
 from lib import dataset
-from torch.optim import Adam
+from lib import metrics
+from torch.optim import Adam, SGD
 import pandas as pd
 import torch
 import os
 
 
 architectures = {
-    'simplecnn': SimpleCNN
+    'simplecnn': SimpleCNN,
+    'unet': UNet
 }
 
 optimizers = {
-    'adam': Adam
+    'adam': Adam,
+    'sgd': SGD
 }
 
 losses = {
-    'mse': torch.nn.MSELoss
+    'mse': torch.nn.MSELoss,
+    'bcewithlogits': torch.nn.BCEWithLogitsLoss,
+    'bce': torch.nn.BCELoss
 }
 
 datasets = {
     'stealdataset': dataset.StealDataset
+}
+
+metrics = {
+    'dice': metrics.dice
 }
 
 
@@ -65,7 +74,7 @@ class ConfigFactory:
             del conf['test_split']
 
             # Metrics
-            conf['metrics'] = {'EER': lambda x, y: 1.0}
+            conf['metrics'] = {metric: metrics[metric] for metric in conf['metrics']}
 
             return conf
 
@@ -78,3 +87,4 @@ class ConfigFactory:
 #     model = configurer.build_model(os.path.join(model_dir, 'simple_cnn.json'))
 #     train_params = configurer.build_train_env(model, os.path.join(train_dir, 'train_conf_1.json'))
 #     print(train_params)
+# python train.py --model_conf=./params/models/simple_cnn.json --train_conf=./params/trains/train_conf_1.json

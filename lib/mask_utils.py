@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 def rle2mask(rle, img_shape):
@@ -37,3 +38,9 @@ def mask2rle(img):
             last_color = 0
             rle.append(str(start_pos) + ' ' + str(end_pos - start_pos + 1))
     return " ".join(rle)
+
+
+def pred2mask(batch_pred):
+    batch_pred[batch_pred < 0.5] = 0
+    batch_pred[batch_pred >= 0.5] = 1
+    return batch_pred
