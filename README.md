@@ -9,6 +9,15 @@ python train.py \
 --train_conf=./params/trains/train_conf_1.json
 ```
 
+For making predictions:
+```shell script
+python submit.py --model_json=./params/models/unet.json\
+ --model_path=./logs/UNet_best.dat\
+ --data_path=./input/severstal-steel-defect-detection/\
+ --csv=./input/severstal-steel-defect-detection/sample_submission.csv\ 
+--cuda=True
+```
+
 Examples for configuration are shown in `./params/`.
 
 When adding new models into `lib/models.py` make sure that it exists in `configs.py`:
