@@ -3,6 +3,9 @@ from PIL import Image
 from torchvision import transforms
 from lib.mask_utils import rle2mask
 from lib.transform import data_transform
+import numpy as np
+import torch
+import cv2
 
 
 class StealDataset(Dataset):
@@ -21,15 +24,23 @@ class StealDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, index):
-        filename, classId = self.df['ImageId_ClassId'].iloc[index].split('_')
-        fn = filename
+        fn = self.df['filename'].iloc[index]
         img = Image.open(self.data_path + fn)
         img = self.transform(img)
 
         if self.subset == 'train':
-            mask = rle2mask(self.df['EncodedPixels'].iloc[index], (256, 1600))
-            mask = transforms.ToPILImage()(mask)
-            mask = self.transform(mask)
+            masks = []
+            rles = self.df['rles'].iloc[index]
+            assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
+            for i in range(len(rles)):
+                mask = rle2mask(rles[i], (256, 1600))
+                mask = cv2.resize(mask, (400, 64))
+                masks.append(mask[None])
+            mask = np.concatenate(masks, axis=0)
+            # mask = transforms.ToPILImage()(mask)
+            # mask = self.transform(mask)
+            # mask = transforms.ToTensor()(mask)
+            mask = torch.Tensor(mask)
             return img, mask
         else:
-            return img
+            return img, self.df['class'].iloc[index]

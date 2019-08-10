@@ -5,6 +5,7 @@ from lib.mask_utils import pred2mask
 import os
 
 import torch
+import numpy as np
 import tqdm
 
 
@@ -64,7 +65,7 @@ def train(net, loss, metrics, train_data, valid_data, optimizer, gpu, batch_size
             for metric in metrics.keys():
                 val_score[metric] = metrics[metric](pred_y, true_y)
             print(val_score)
-            val_score = max(val_score.values())
+            val_score = np.mean(list(val_score.values()))
             if len(score_history) > 0 and val_score > max(score_history):
                 if not os.path.exists(log_path):
                     os.mkdir(log_path)

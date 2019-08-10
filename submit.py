@@ -28,6 +28,8 @@ def main():
     else:
         model.cpu()
     df = pd.read_csv(args.csv)[:100]
+    df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+    df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
     dataset = StealDataset(args.data_path, df, subset='test')
     data_loader = DataLoader(dataset=dataset, batch_size=80)
     predict(model, df, data_loader, args.cuda)
@@ -35,25 +37,26 @@ def main():
 
 def predict(model, test_df, test_loader, cuda):
     with torch.no_grad():
-        predict = []
+        predicts = []
         model.eval()
-        for data in tqdm.tqdm(test_loader, desc='Predicting batches'):
+        for data, label in tqdm.tqdm(test_loader, desc='Predicting batches'):
             if cuda:
                 data = data.cuda()
             output = model(data)
             output = output.cpu().detach().numpy()
-            rles = Parallel(n_jobs=mp.cpu_count())(delayed(post_process)(img) for img in output)
+            rles = Parallel(n_jobs=mp.cpu_count())(delayed(post_process)(img, lab) for img, lab in zip(output, label))
             # for img in output:
             #     predict.append(rle)
-            predict += rles
+            predicts += rles
 
-        test_df['EncodedPixels'] = predict
+        test_df['EncodedPixels'] = predicts
+        test_df = test_df[['ImageId_ClassId', 'EncodedPixels']]
         test_df.head(10)
         test_df.to_csv('submission.csv', index=False)
 
 
-def post_process(img):
-    mask = pred2mask(img[0])
+def post_process(img, lab):
+    mask = pred2mask(img[lab-1])
     resized = cv2.resize(mask, (1600, 256))
     return mask2rle(resized)
 
@@ -63,3 +66,4 @@ if __name__ == '__main__':
 
 #python submit.py --model_json=./params/models/unet1.json --model_path=./logs/UNet_best.dat --data_path=./input/severstal-st
 #eel-defect-detection/ --csv=./input/severstal-steel-defect-detection/sample_submission.csv --cuda=True
+

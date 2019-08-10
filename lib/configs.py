@@ -6,6 +6,7 @@ from torch.optim import Adam, SGD
 import pandas as pd
 import torch
 import os
+import tqdm
 
 
 architectures = {
@@ -63,9 +64,24 @@ class ConfigFactory:
 
             # Generating Datasets
             df = pd.read_csv(os.path.join(conf['dataset']['params']['base_path'], 'train.csv'))
-            df = df[df['EncodedPixels'].notnull()].reset_index(drop=True)
-            test = df.sample(frac=conf['test_split'])
-            train = df.drop(test.index)
+            # df = df[df['EncodedPixels'].notnull()].reset_index(drop=True)
+            df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+            df['class'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[1])
+
+            # TODO: Need to parallelize this block! Works slowly
+            # UPD: Fixed
+            # ----------------------------------------------
+            images = pd.DataFrame()
+            images['filename'] = df['filename'].unique()
+            images['rles'] = df.groupby(df.filename)
+            images['rles'] = images['rles'].apply(lambda x: x[1][['class', 'EncodedPixels']].values)
+            images['rles'] = images['rles'].apply(lambda x: list(map(lambda k: k[1], sorted(x, key=lambda val: val[0]))))
+            # for i in tqdm.tqdm(range(1, 5), desc='Preparing csv file'):
+            #     images['class_' + str(i)] = images['filename']\
+            #         .apply(lambda x: df[(df.filename == x) & (df['class'] == str(i))]['EncodedPixels'].values[0])
+            test = images.sample(frac=conf['test_split'])
+            train = images.drop(test.index)
+            # ----------------------------------------------
             conf['dataset']['params']['df'] = train
             conf['train_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
             conf['dataset']['params']['df'] = test

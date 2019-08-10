@@ -7,7 +7,7 @@ def rle2mask(rle, img_shape):
     height = img_shape[1]
 
     mask = np.zeros(width * height).astype(np.uint8)
-    if rle == 'nan':
+    if not isinstance(rle, str):
         return np.flipud(np.rot90(mask.reshape(height, width), k=1))
     array = np.asarray([int(x) for x in rle.split()])
     starts = array[0::2]
