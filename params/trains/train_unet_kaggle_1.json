@@ -1,6 +1,6 @@
 {
   "optimizer" : {
-    "class" : "SGD",
+    "class" : "Adam",
     "params" : {
       "lr" : 0.001
     }
