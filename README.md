@@ -11,8 +11,7 @@ python train.py \
 
 For making predictions:
 ```shell script
-python submit.py --model_json=./params/models/unet.json\
- --model_path=./logs/UNet_best.dat\
+python submit.py --model_json=unet1.json --model_path=./logs/UNet_best.dat\
  --data_path=./input/severstal-steel-defect-detection/\
  --csv=./input/severstal-steel-defect-detection/sample_submission.csv\ 
 --cuda=True

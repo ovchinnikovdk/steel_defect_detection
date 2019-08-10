@@ -21,7 +21,8 @@ class StealDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, index):
-        fn = self.df['ImageId_ClassId'].iloc[index].split('_')[0]
+        filename, classId = self.df['ImageId_ClassId'].iloc[index].split('_')
+        fn = filename
         img = Image.open(self.data_path + fn)
         img = self.transform(img)
 

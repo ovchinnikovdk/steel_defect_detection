@@ -61,5 +61,5 @@ def post_process(img):
 if __name__ == '__main__':
     main()
 
-#python submit.py --model_json=./params/models/unet.json --model_path=./logs/UNet_best.dat --data_path=./input/severstal-st
+#python submit.py --model_json=./params/models/unet1.json --model_path=./logs/UNet_best.dat --data_path=./input/severstal-st
 #eel-defect-detection/ --csv=./input/severstal-steel-defect-detection/sample_submission.csv --cuda=True
