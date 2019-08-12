@@ -39,13 +39,15 @@ import torch
 #             rle.append(str(start_pos) + ' ' + str(end_pos - start_pos + 1))
 #     return " ".join(rle)
 
-def rle2mask(mask_rle, shape=(1600,256)):
+def rle2mask(mask_rle, shape=(1600, 256)):
     '''
     mask_rle: run-length as string formated (start length)
     shape: (width,height) of array to return
     Returns numpy array, 1 - mask, 0 - background
 
     '''
+    if not isinstance(mask_rle, str):
+        return np.zeros(shape[0] * shape[1], dtype=np.uint8)
     s = mask_rle.split()
     starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
     starts -= 1
