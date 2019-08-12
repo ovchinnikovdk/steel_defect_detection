@@ -43,7 +43,7 @@ def predict(model, test_df, test_loader, cuda):
             if cuda:
                 data = data.cuda()
             output = model(data)
-            output = output.cpu().detach().numpy()
+            output = output.cpu()
             rles = Parallel(n_jobs=mp.cpu_count())(delayed(post_process)(img, lab) for img, lab in zip(output, label))
             # for img in output:
             #     predict.append(rle)
@@ -57,6 +57,7 @@ def predict(model, test_df, test_loader, cuda):
 
 def post_process(img, lab):
     mask = pred2mask(img[lab-1])
+    mask = mask.numpy()
     resized = cv2.resize(mask, (1600, 256))
     return mask2rle(resized)
 
