@@ -68,6 +68,7 @@ def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_
         true_y = torch.cat(true_y, dim=0)
         print("Validation loss: {0:10.5f}".format(val_loss))
         print(pred_y.shape)
+        print(true_y.shape)
         for metric in metrics.keys():
             val_score[metric] = metrics[metric](pred_y, true_y)
         print(val_score)
