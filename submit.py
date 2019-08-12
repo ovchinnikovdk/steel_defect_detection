@@ -27,7 +27,7 @@ def main():
         model.cuda()
     else:
         model.cpu()
-    df = pd.read_csv(args.csv)[:100]
+    df = pd.read_csv(args.csv)
     df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
     df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
     dataset = StealDataset(args.data_path, df, subset='test')
