@@ -62,6 +62,7 @@ def train(net, loss, metrics, train_data, valid_data, optimizer, gpu, batch_size
                 torch.cuda.empty_cache()
             pred_y = torch.cat(pred_y, dim=0)
             true_y = torch.cat(true_y, dim=0)
+            print(pred_y.shape)
             for metric in metrics.keys():
                 val_score[metric] = metrics[metric](pred_y, true_y)
             print(val_score)
