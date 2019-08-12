@@ -2,23 +2,23 @@ import numpy as np
 import torch
 
 
-def rle2mask(rle, img_shape):
-    width = img_shape[0]
-    height = img_shape[1]
-
-    mask = np.zeros(width * height).astype(np.uint8)
-    if not isinstance(rle, str):
-        return np.flipud(np.rot90(mask.reshape(height, width), k=1))
-    array = np.asarray([int(x) for x in rle.split()])
-    starts = array[0::2]
-    lengths = array[1::2]
-
-    current_position = 0
-    for index, start in enumerate(starts):
-        mask[int(start):int(start + lengths[index])] = 1
-        current_position += lengths[index]
-
-    return np.flipud(np.rot90(mask.reshape(height, width), k=1))
+# def rle2mask(rle, img_shape):
+#     width = img_shape[0]
+#     height = img_shape[1]
+#
+#     mask = np.zeros(width * height).astype(np.uint8)
+#     if not isinstance(rle, str):
+#         return np.flipud(np.rot90(mask.reshape(height, width), k=1))
+#     array = np.asarray([int(x) for x in rle.split()])
+#     starts = array[0::2]
+#     lengths = array[1::2]
+#
+#     current_position = 0
+#     for index, start in enumerate(starts):
+#         mask[int(start):int(start + lengths[index])] = 1
+#         current_position += lengths[index]
+#
+#     return np.flipud(np.rot90(mask.reshape(height, width), k=1))
 
 
 # def mask2rle(img):
@@ -38,6 +38,18 @@ def rle2mask(rle, img_shape):
 #             last_color = 0
 #             rle.append(str(start_pos) + ' ' + str(end_pos - start_pos + 1))
 #     return " ".join(rle)
+
+def mask2rle(img):
+    '''
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels= img.T.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
+
 
 def mask2rle(img):
     '''

@@ -36,7 +36,7 @@ class StealDataset(Dataset):
             rles = self.df['rles'].iloc[index]
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
             for i in range(len(rles)):
-                mask = rle2mask(rles[i], (256, 1600))
+                mask = rle2mask(rles[i], (1600, 256))
                 mask = cv2.resize(mask, (400, 64))
                 masks.append(mask[None])
             mask = np.concatenate(masks, axis=0)
