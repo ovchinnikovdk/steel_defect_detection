@@ -44,7 +44,8 @@ def predict(model, test_df, test_loader, cuda):
                 data = data.cuda()
             output = model(data)
             output = output.cpu()
-            rles = Parallel(n_jobs=mp.cpu_count())(delayed(post_process)(img, lab) for img, lab in zip(output, label))
+            masks = [pred2mask(mask[lab-1]).numpy() for mask, lab in zip(output, label)]
+            rles = Parallel(n_jobs=mp.cpu_count())(delayed(post_process)(img) for img in masks)
             # for img in output:
             #     predict.append(rle)
             predicts += rles
@@ -55,10 +56,10 @@ def predict(model, test_df, test_loader, cuda):
         test_df.to_csv('submission.csv', index=False)
 
 
-def post_process(img, lab):
-    mask = pred2mask(img[lab-1])
-    mask = mask.numpy()
-    resized = cv2.resize(mask, (1600, 256))
+def post_process(img):
+    # mask = pred2mask(img[lab-1])
+    # mask = mask.numpy()
+    resized = cv2.resize(img, (1600, 256))
     return mask2rle(resized)
 
 
