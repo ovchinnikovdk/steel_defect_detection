@@ -69,8 +69,8 @@ def mask2rle(img):
     runs[1::2] -= runs[::2]
     return ' '.join(str(x) for x in runs)
 
+
 def pred2mask(batch_pred):
-    prob_mean = torch.mean(batch_pred) * 1.2
-    batch_pred[batch_pred < prob_mean] = 0
-    batch_pred[batch_pred >= prob_mean] = 1
+    batch_pred[batch_pred < 0.5] = 0
+    batch_pred[batch_pred >= 0.5] = 1
     return batch_pred

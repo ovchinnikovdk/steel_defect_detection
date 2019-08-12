@@ -4,6 +4,7 @@ from lib import dataset
 from lib import metrics
 from torch.optim import Adam, SGD
 import pandas as pd
+import numpy as np
 import torch
 import os
 import tqdm
@@ -81,6 +82,8 @@ class ConfigFactory:
             #         .apply(lambda x: df[(df.filename == x) & (df['class'] == str(i))]['EncodedPixels'].values[0])
             test = images.sample(frac=conf['test_split'])
             train = images.drop(test.index)
+            train['full'] = train['rles'].apply(lambda x: np.any([isinstance(t, str) for t in x]))
+            train = train[train.full].reset_index()
             # ----------------------------------------------
             conf['dataset']['params']['df'] = train
             conf['train_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
