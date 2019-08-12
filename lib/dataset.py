@@ -11,7 +11,7 @@ import cv2
 class StealDataset(Dataset):
     def __init__(self, base_path, df, transform=data_transform, subset="train"):
         super().__init__()
-        self.df = df[:1000]
+        self.df = df
         self.transform = transform
         self.subset = subset
 
