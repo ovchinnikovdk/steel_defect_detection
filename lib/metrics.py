@@ -1,15 +1,16 @@
 import torch
 
 
-def dice(pred_y, truth_y, eps=1.):
+def dice(pred_y, truth_y, eps=1e-10):
     shape = pred_y.shape
-    dices = torch.Tensor()
+    dices = []
     for i in range(shape[1]):
         pr_flat = pred_y[:, i, :, :].view(-1, shape[2] * shape[3])
         tr_flat = truth_y[:, i, :, :].view(-1, shape[2] * shape[3])
         intersection = torch.sum(pr_flat * tr_flat, 1)
-        dice_scores = 2. * (intersection + eps) / (torch.sum(pr_flat, 1) + torch.sum(tr_flat, 1) + eps)
-        dices = torch.cat((dices, dice_scores))
+        dice_scores = 2. * intersection / (torch.sum(pr_flat, 1) + torch.sum(tr_flat, 1) + eps)
+        dices.append(dice_scores)
+    dices = torch.cat(dices)
     return torch.mean(dices).item()
 
 

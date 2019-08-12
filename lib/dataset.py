@@ -9,9 +9,12 @@ import cv2
 
 
 class StealDataset(Dataset):
-    def __init__(self, base_path, df, transform=data_transform, subset="train"):
+    def __init__(self, base_path, df, transform=data_transform, subset="train", size=None):
         super().__init__()
-        self.df = df
+        if size is not None:
+            self.df = df[:size]
+        else:
+            self.df = df
         self.transform = transform
         self.subset = subset
 
