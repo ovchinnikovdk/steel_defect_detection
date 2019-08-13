@@ -1,7 +1,8 @@
 import json
-from lib.models import SimpleCNN, UNet
+from lib.models import *
 from lib import dataset
 from lib import metrics
+from lib.preprocessing import DatasetGenerator
 from torch.optim import Adam, SGD
 import pandas as pd
 import numpy as np
@@ -11,7 +12,6 @@ import tqdm
 
 
 architectures = {
-    'simplecnn': SimpleCNN,
     'unet': UNet
 }
 
@@ -64,26 +64,8 @@ class ConfigFactory:
             conf['optimizer'] = optimizers[conf['optimizer']['class'].lower()](net.parameters(), **conf['optimizer']['params'])
 
             # Generating Datasets
-            df = pd.read_csv(os.path.join(conf['dataset']['params']['base_path'], 'train.csv'))
-            # df = df[df['EncodedPixels'].notnull()].reset_index(drop=True)
-            df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
-            df['class'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[1])
-
-            # TODO: Need to parallelize this block! Works slowly
-            # UPD: Fixed
-            # ----------------------------------------------
-            images = pd.DataFrame()
-            images['filename'] = df['filename'].unique()
-            images['rles'] = df.groupby(df.filename)
-            images['rles'] = images['rles'].apply(lambda x: x[1][['class', 'EncodedPixels']].values)
-            images['rles'] = images['rles'].apply(lambda x: list(map(lambda k: k[1], sorted(x, key=lambda val: val[0]))))
-            # for i in tqdm.tqdm(range(1, 5), desc='Preparing csv file'):
-            #     images['class_' + str(i)] = images['filename']\
-            #         .apply(lambda x: df[(df.filename == x) & (df['class'] == str(i))]['EncodedPixels'].values[0])
-            test = images.sample(frac=conf['test_split'])
-            train = images.drop(test.index)
-            train['full'] = train['rles'].apply(lambda x: np.any([isinstance(t, str) for t in x]))
-            train = train[train.full].reset_index()
+            train, test = DatasetGenerator()\
+                .generate(os.path.join(conf['dataset']['params']['base_path'], 'train.csv'), conf['test_split'])
             # ----------------------------------------------
             conf['dataset']['params']['df'] = train
             conf['train_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
@@ -103,7 +85,7 @@ class ConfigFactory:
 #     param_dir = os.path.join(os.pardir, 'params')
 #     model_dir = os.path.join(param_dir, 'models')
 #     train_dir = os.path.join(param_dir, 'trains')
-#     model = configurer.build_model(os.path.join(model_dir, 'simple_cnn.json'))
-#     train_params = configurer.build_train_env(model, os.path.join(train_dir, 'train_conf_1.json'))
+#     model = configurer.build_model(os.path.join(model_dir, 'unet1.json'))
+#     train_params = configurer.build_train_env(model, os.path.join(train_dir, 'train_unet_local1.json'))
 #     print(train_params)
-# python train.py --model_conf=./params/models/simple_cnn.json --train_conf=./params/trains/train_conf_1.json
+# python train.py --model_conf=./params/models/unet1.json --train_conf=./params/trains/train_unet_local_1.json
