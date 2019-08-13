@@ -77,7 +77,7 @@ def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_
         if val_score > max(score_history):
             if not os.path.exists(log_path):
                 os.mkdir(log_path)
-            torch.save(net.state_dict(), os.path.join(log_path, net.__class__.__name__ + '_best.dat'))
+            torch.save(net.state_dict(), os.path.join(log_path, net_version + '_best.dat'))
         score_history.append(val_score)
         scheduler.step(val_score)
 

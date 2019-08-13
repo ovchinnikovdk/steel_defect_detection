@@ -12,7 +12,8 @@ import tqdm
 
 
 architectures = {
-    'unet': UNet
+    'unet': UNet,
+    'deeplabv3plus': DeepLabV3Plus
 }
 
 optimizers = {

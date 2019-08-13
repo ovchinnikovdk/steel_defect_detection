@@ -12,10 +12,11 @@
     "params" : {
       "base_path" : "./input/severstal-steel-defect-detection/",
       "subset" : "train",
-      "size" : 1000
+      "size" : 1000,
+      "resize_to": [64, 64]
     }
   },
-  "batch_size" : 30,
+  "batch_size" : 10,
   "test_split" : 0.1,
   "gpu" : true,
   "metrics" : [

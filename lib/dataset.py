@@ -9,12 +9,15 @@ import cv2
 
 
 class StealDataset(Dataset):
-    def __init__(self, base_path, df, transform=data_transform, subset="train", size=None):
+    def __init__(self, base_path, df, transform=data_transform, subset="train", size=None,
+                 original_size=(256, 1600), resize_to=(64, 400)):
         super().__init__()
         if size is not None:
             self.df = df[:size]
         else:
             self.df = df
+        self.original_size = original_size
+        self.resize_to = resize_to
         self.transform = transform
         self.subset = subset
 
@@ -37,7 +40,7 @@ class StealDataset(Dataset):
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
             for i in range(len(rles)):
                 mask = rle2mask(rles[i], (1600, 256))
-                mask = cv2.resize(mask, (400, 64))
+                mask = cv2.resize(mask, (self.resize_to[1], self.resize_to[0]))
                 masks.append(mask[None])
             mask = np.concatenate(masks, axis=0)
             # mask = transforms.ToPILImage()(mask)
