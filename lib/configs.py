@@ -76,7 +76,7 @@ class ConfigFactory:
 
             # Metrics
             conf['metrics'] = {metric: metrics[metric] for metric in conf['metrics']}
-            conf['net_version'] = json_path.spli('.')[0]
+            conf['net_version'] = json_path.split('.')[0]
 
             return conf
 

@@ -2,5 +2,5 @@
   "model" : "Unet",
   "in_channels" : 1,
   "out_channels" : 4,
-  "layer_size" : 128
+  "layer_size" : 80
 }
