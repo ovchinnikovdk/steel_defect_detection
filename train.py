@@ -21,7 +21,10 @@ def main():
     train(**train_configs)
 
 
-def train(net, loss, metrics, train_data, valid_data, optimizer, gpu, batch_size=64, epochs=30, log_path='logs'):
+def train(net, loss, metrics, train_data,
+          valid_data, optimizer, gpu,
+          batch_size=64, epochs=30, log_path='logs',
+          net_version='dummy1'):
     val_loader = DataLoader(valid_data, batch_size=batch_size)
     train_loader = DataLoader(train_data, batch_size=batch_size)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max')
@@ -42,10 +45,10 @@ def train(net, loss, metrics, train_data, valid_data, optimizer, gpu, batch_size
             optimizer.step()
             sum_loss += loss_out.item()
         print("Loss: " + str(sum_loss))
-        validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, i)
+        validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, i, net_version)
 
 
-def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, epoch):
+def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, epoch, net_version):
     # Validating Epoch
     torch.cuda.empty_cache()
     net.eval()
