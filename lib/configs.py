@@ -65,7 +65,7 @@ class ConfigFactory:
             conf['optimizer'] = optimizers[conf['optimizer']['class'].lower()](net.parameters(), **conf['optimizer']['params'])
 
             # Generating Datasets
-            train, test = DatasetGenerator()\
+            test, train = DatasetGenerator()\
                 .generate(os.path.join(conf['dataset']['params']['base_path'], 'train.csv'), conf['test_split'])
             # ----------------------------------------------
             conf['dataset']['params']['df'] = train
