@@ -8,7 +8,7 @@ import torch
 import cv2
 
 
-class StealDataset(Dataset):
+class SteelDataset(Dataset):
     def __init__(self, base_path, df, transform=data_transform, subset="train", size=None,
                  original_size=(256, 1600), resize_to=(64, 400)):
         super().__init__()
@@ -50,3 +50,31 @@ class StealDataset(Dataset):
             return img, mask
         else:
             return img, self.df['class'].iloc[index]
+
+
+class SteelPredictionDataset(Dataset):
+    def __init__(self, base_path, df, transform=data_transform, subset='train', size=None):
+        if size is not None:
+            self.df = df.sample(size)
+        else:
+            self.df = df
+        self.subset = subset
+        self.transform = data_transform
+        if self.subset == "train":
+            self.data_path = base_path + 'train_images/'
+        elif self.subset == "test":
+            self.data_path = base_path + 'test_images/'
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, index):
+        fn = self.df['ImageId_ClassId'].iloc[index].split('_')[0]
+        img = Image.open(self.data_path + fn)
+        img = self.transform(img)
+
+        if self.subset == 'train':
+            label = 1 if isinstance(self.df['EncodedPixels'].iloc[index], str) else 0
+            return img, label
+        else:
+            return img

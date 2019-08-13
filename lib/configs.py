@@ -28,7 +28,7 @@ losses = {
 }
 
 datasets = {
-    'stealdataset': dataset.StealDataset
+    'stealdataset': dataset.SteelDataset
 }
 
 metrics = {
@@ -37,16 +37,14 @@ metrics = {
 
 
 class ConfigFactory:
-    @staticmethod
-    def build_model(json_path):
+    def build_model(self, json_path):
         with open(json_path, 'r') as json_file:
             conf = json.load(json_file)
             name = conf['model'].lower()
             del conf['model']
             return architectures[name](**conf)
 
-    @staticmethod
-    def build_train_env(net, json_path):
+    def build_train_env(self, net, json_path):
         with open(json_path, 'r') as json_file:
             conf = json.load(json_file)
 
@@ -77,9 +75,28 @@ class ConfigFactory:
 
             # Metrics
             conf['metrics'] = {metric: metrics[metric] for metric in conf['metrics']}
-            conf['net_version'] = json_path.split('.')[0]
+            conf['net_version'] = json_path.split('/')[-1].split('.')[0]
 
             return conf
+
+    def build_submit_env(self, json_path):
+        with open(json_path) as json_file:
+            config = json.load(json_file)
+            df = pd.read_csv(config['csv'])
+            cuda = config['cuda']
+            models = dict()
+            df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+            df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
+            if 'segmentation' in config:
+                seg_model = self.build_model(config['segmentation']['model'])
+                seg_model.load_state_dict(torch.load(config['segmentation']['state_dict']))
+                models['segmentation'] = seg_model
+            if 'prediction' in config:
+                pred_model = self.build_model(config['prediction']['model'])
+                pred_model.load_state_dict(torch.load(config['prediction']['state_dict']))
+                models['prediction'] = pred_model
+            return models, df, config['data_path'], cuda
+
 
 
 # if __name__ == '__main__':
