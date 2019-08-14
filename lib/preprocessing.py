@@ -32,8 +32,17 @@ class ClassifierDatasetGenerator:
 
     def generate(self, path, test_split):
         df = pd.read_csv(path)
-        test = df.sample(frac=test_split)
-        train = df.drop(test.index)
+        df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+        df['class'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[1])
+
+        images = pd.DataFrame()
+        images['filename'] = df['filename'].unique()
+        images['rles'] = df.groupby(df.filename)
+        images['rles'] = images['rles'].apply(lambda x: x[1][['class', 'EncodedPixels']].values)
+        images['rles'] = images['rles'].apply(lambda x: list(map(lambda k: k[1], sorted(x, key=lambda val: val[0]))))
+        test = images.sample(frac=test_split)
+        train = images.drop(test.index)
+        train['label'] = train['rles'].apply(lambda x: 1 if np.any([isinstance(t, str) for t in x]) else 0)
         return test, train
 
 

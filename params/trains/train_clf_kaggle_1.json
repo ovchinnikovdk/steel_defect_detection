@@ -15,7 +15,7 @@
       "subset" : "train"
     }
   },
-  "batch_size" : 100,
+  "batch_size" : 50,
   "test_split" : 0.1,
   "gpu" : true,
   "metrics" : [

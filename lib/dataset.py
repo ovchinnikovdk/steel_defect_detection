@@ -69,12 +69,12 @@ class SteelPredictionDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, index):
-        fn = self.df['ImageId_ClassId'].iloc[index].split('_')[0]
+        fn = self.df['filename'].iloc[index].split('_')[0]
         img = Image.open(self.data_path + fn)
         img = self.transform(img)
 
         if self.subset == 'train':
-            label = 1 if isinstance(self.df['EncodedPixels'].iloc[index], str) else 0
+            label = self.df['label'].iloc[index]
             return img, torch.Tensor(np.array([label]))
         else:
             return img

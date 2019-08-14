@@ -15,6 +15,7 @@ def main():
     result_df = None
     if 'prediction' in models:
         predictor = models['prediction']
+        df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
         dataloader = DataLoader(dataset=SteelPredictionDataset(data_path, df, subset='test'), batch_size=80)
         clean, df = CleanSteelPredictor(df, predictor, dataloader, cuda).call()
         result_df = clean
