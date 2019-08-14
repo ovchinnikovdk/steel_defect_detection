@@ -46,8 +46,8 @@ def rle2mask(mask_rle, shape=(1600, 256)):
     Returns numpy array, 1 - mask, 0 - background
 
     '''
-    if not isinstance(mask_rle, str):
-        return np.zeros(shape[0] * shape[1], dtype=np.uint8)
+    if not isinstance(mask_rle, str) or len(mask_rle) <= 1:
+        return np.zeros(shape[0] * shape[1], dtype=np.uint8).reshape(shape).T
     s = mask_rle.split()
     starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
     starts -= 1

@@ -1,0 +1,26 @@
+{
+  "optimizer" : {
+    "class" : "Adam",
+    "params" : {
+      "lr" : 0.001
+    }
+  },
+  "epochs" : 30,
+  "loss" : "bcewithlogits",
+  "generator" : "segmentationdatasetgenerator",
+  "dataset" : {
+    "class" : "SteelDatasetV2",
+    "params" : {
+      "base_path" : "./input/severstal-steel-defect-detection/",
+      "subset" : "train",
+      "size" : 1000
+    }
+  },
+  "batch_size" : 10,
+  "test_split" : 0.1,
+  "gpu" : true,
+  "metrics" : [
+    "dice"
+  ],
+  "log_path": "logs"
+}

@@ -32,6 +32,7 @@ losses = {
 
 datasets = {
     'steeldataset': dataset.SteelDataset,
+    'steeldatasetv2': dataset.SteelDatasetV2,
     'steelpredictiondataset': dataset.SteelPredictionDataset
 }
 
@@ -80,6 +81,7 @@ class ConfigFactory:
             conf['dataset']['params']['df'] = train
             conf['train_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
             conf['dataset']['params']['df'] = test
+            conf['dataset']['params']['subset'] = 'val'
             conf['valid_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
             del conf['dataset']
             del conf['test_split']

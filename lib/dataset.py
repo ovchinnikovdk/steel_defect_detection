@@ -21,7 +21,7 @@ class SteelDataset(Dataset):
         self.transform = transform
         self.subset = subset
 
-        if self.subset == "train":
+        if self.subset == "train" or self.subset == "val":
             self.data_path = base_path + 'train_images/'
         elif self.subset == "test":
             self.data_path = base_path + 'test_images/'
@@ -34,7 +34,7 @@ class SteelDataset(Dataset):
         img = Image.open(self.data_path + fn)
         img = self.transform(img)
 
-        if self.subset == 'train':
+        if self.subset == "train" or self.subset == "val":
             masks = []
             rles = self.df['rles'].iloc[index]
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
@@ -78,3 +78,45 @@ class SteelPredictionDataset(Dataset):
             return img, torch.Tensor(np.array([label]))
         else:
             return img
+
+
+class SteelDatasetV2(Dataset):
+    def __init__(self, base_path, df, transform=data_transform, subset="train", size=None,
+                 original_size=(256, 1600), resize_to=(64, 400)):
+        super().__init__()
+        if size is not None:
+            self.df = df[:size]
+        else:
+            self.df = df
+        self.original_size = original_size
+        self.resize_to = resize_to
+        self.transform = get_transforms(subset)
+        self.subset = subset
+
+        if self.subset == "train" or self.subset == "val":
+            self.data_path = base_path + 'train_images/'
+        elif self.subset == "test":
+            self.data_path = base_path + 'test_images/'
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, index):
+        fn = self.df['filename'].iloc[index]
+        img = cv2.imread(self.data_path + fn, 0)
+        img = img.reshape((img.shape[0], img.shape[1], 1))
+        if self.subset == 'train' or self.subset == 'val':
+            rles = self.df['rles'].iloc[index]
+            assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
+            masks = np.zeros((256, 1600, 4), dtype=np.int32)
+            for i in range(len(rles)):
+                mask = rle2mask(rles[i], (1600, 256))
+                masks[:, :, i] = mask
+            # mask = np.concatenate(masks, axis=0)
+            # Mask shape (256, 1600, 4)
+            augmented = self.transform(image=img, mask=masks)
+            img, mask = augmented['image'], augmented['mask']
+            mask = mask[0].permute(2, 0, 1)
+            return img, mask
+        else:
+            return self.transform(img), self.df['class'].iloc[index]
