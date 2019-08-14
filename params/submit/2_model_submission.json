@@ -1,0 +1,13 @@
+{
+  "cuda" : true,
+  "csv" : "./input/severstal-steel-defect-detection/sample_submission.csv",
+  "data_path" : "./input/severstal-steel-defect-detection/",
+  "segmentation" : {
+    "model" : "./params/models/unet_kgl.json",
+    "state_dict": "./logs/UNet_best.dat"
+  },
+  "prediction" : {
+    "model" : "./params/models/densenet_v1.json",
+    "state_dict" : "./logs/train_clf_local_1_best.dat"
+  }
+}

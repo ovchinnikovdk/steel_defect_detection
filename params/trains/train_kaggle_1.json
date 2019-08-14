@@ -7,8 +7,9 @@
   },
   "epochs" : 50,
   "loss" : "bcewithlogits",
+  "generator" : "segmentationdatasetgenerator",
   "dataset" : {
-    "class" : "StealDataset",
+    "class" : "SteelDataset",
     "params" : {
       "base_path" : "../input/severstal-steel-defect-detection/",
       "subset" : "train"

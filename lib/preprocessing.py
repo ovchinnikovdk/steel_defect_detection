@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-class DatasetGenerator:
+class SegmentationDatasetGenerator:
     def __init__(self):
         pass
 
@@ -24,3 +24,16 @@ class DatasetGenerator:
         train = train[train.full].reset_index()
         del train['full']
         return test, train
+
+
+class ClassifierDatasetGenerator:
+    def __init__(self):
+        pass
+
+    def generate(self, path, test_split):
+        df = pd.read_csv(path)
+        test = df.sample(frac=test_split)
+        train = df.drop(test.index)
+        return test, train
+
+

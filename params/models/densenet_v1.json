@@ -1,0 +1,6 @@
+{
+  "model" : "densenet",
+  "num_init_features": 64,
+  "num_classes": 1,
+  "drop_rate": 0.5
+}

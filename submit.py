@@ -20,10 +20,13 @@ def main():
         result_df = clean
     if 'segmentation' in models:
         segmentation = models['segmentation']
+        df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+        df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
         dataloader = DataLoader(dataset=SteelDataset(data_path, df, subset='test'), batch_size=80)
         df = SteelSegmentation(df, segmentation, dataloader, cuda).call()
         if result_df is not None:
-            result_df.append(df)
+            print(df.head(10))
+            result_df = result_df.append(df).reset_index()
         else:
             result_df = df
 

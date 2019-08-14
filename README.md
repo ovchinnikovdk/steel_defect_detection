@@ -6,15 +6,12 @@ For training run:
 ```shell script
 python train.py \
 --model_conf=./params/models/unet1.json \
---train_conf=./params/trains/train_unet_local_1.json
+--train_conf=train_local_1.json
 ```
 
 For making predictions:
 ```shell script
-python submit.py --model_json=unet1.json --model_path=./logs/UNet_best.dat\
- --data_path=./input/severstal-steel-defect-detection/\
- --csv=./input/severstal-steel-defect-detection/sample_submission.csv\ 
---cuda=True
+python submit.py --config_path=./params/submit/2_model_submission.json
 ```
 
 Examples for configuration are shown in `./params/`.

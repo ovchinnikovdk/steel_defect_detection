@@ -1,4 +1,7 @@
 import torch
+import numpy as np
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
 
 
 def dice(pred_y, truth_y, eps=1.):
@@ -12,6 +15,18 @@ def dice(pred_y, truth_y, eps=1.):
         dices.append(dice_scores)
     dices = torch.cat(dices)
     return torch.mean(dices).item()
+
+
+def roc_auc(pred_y, truth_y):
+    pred_y = pred_y.view(-1).cpu().numpy()
+    truth_y = truth_y.view(-1).cpu().numpy()
+    return roc_auc_score(truth_y, pred_y)
+
+
+def accuracy(pred_y, truth_y):
+    pred_y = pred_y.view(-1).cpu().numpy()
+    truth_y = truth_y.view(-1).cpu().numpy()
+    return accuracy_score(truth_y, pred_y)
 
 
 # if __name__ == '__main__':

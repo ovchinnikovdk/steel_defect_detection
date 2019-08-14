@@ -2,5 +2,5 @@
   "model" : "DeepLabV3Plus",
   "in_channels" : 1,
   "n_classes" : 4,
-  "os" : 8
+  "os" : 16
 }

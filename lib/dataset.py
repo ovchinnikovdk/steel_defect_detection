@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 from torchvision import transforms
 from lib.mask_utils import rle2mask
-from lib.transform import data_transform
+from lib.transform import *
 import numpy as np
 import torch
 import cv2
@@ -53,13 +53,13 @@ class SteelDataset(Dataset):
 
 
 class SteelPredictionDataset(Dataset):
-    def __init__(self, base_path, df, transform=data_transform, subset='train', size=None):
+    def __init__(self, base_path, df, transform=data_clf_transform, subset='train', size=None):
         if size is not None:
             self.df = df.sample(size)
         else:
             self.df = df
         self.subset = subset
-        self.transform = data_transform
+        self.transform = transform
         if self.subset == "train":
             self.data_path = base_path + 'train_images/'
         elif self.subset == "test":
@@ -75,6 +75,6 @@ class SteelPredictionDataset(Dataset):
 
         if self.subset == 'train':
             label = 1 if isinstance(self.df['EncodedPixels'].iloc[index], str) else 0
-            return img, label
+            return img, torch.Tensor(np.array([label]))
         else:
             return img

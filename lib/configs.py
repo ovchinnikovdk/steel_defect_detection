@@ -2,8 +2,9 @@ import json
 from lib.models import *
 from lib import dataset
 from lib import metrics
-from lib.preprocessing import DatasetGenerator
+from lib.preprocessing import *
 from torch.optim import Adam, SGD
+from torchvision import models
 import pandas as pd
 import numpy as np
 import torch
@@ -13,7 +14,9 @@ import tqdm
 
 architectures = {
     'unet': UNet,
-    'deeplabv3plus': DeepLabV3Plus
+    'deeplabv3plus': DeepLabV3Plus,
+    'resnet': models.ResNet,
+    'densenet': DenseNetSigmoid
 }
 
 optimizers = {
@@ -28,11 +31,19 @@ losses = {
 }
 
 datasets = {
-    'stealdataset': dataset.SteelDataset
+    'steeldataset': dataset.SteelDataset,
+    'steelpredictiondataset': dataset.SteelPredictionDataset
 }
 
 metrics = {
-    'dice': metrics.dice
+    'dice': metrics.dice,
+    'rocauc': metrics.roc_auc,
+    'accuracy': metrics.accuracy_score
+}
+
+generators = {
+    'segmentationdatasetgenerator': SegmentationDatasetGenerator,
+    'classifierdatasetgenerator': ClassifierDatasetGenerator
 }
 
 
@@ -63,7 +74,7 @@ class ConfigFactory:
             conf['optimizer'] = optimizers[conf['optimizer']['class'].lower()](net.parameters(), **conf['optimizer']['params'])
 
             # Generating Datasets
-            test, train = DatasetGenerator()\
+            test, train = generators[conf['generator'].lower()]()\
                 .generate(os.path.join(conf['dataset']['params']['base_path'], 'train.csv'), conf['test_split'])
             # ----------------------------------------------
             conf['dataset']['params']['df'] = train
@@ -72,6 +83,7 @@ class ConfigFactory:
             conf['valid_data'] = datasets[conf['dataset']['class'].lower()](**conf['dataset']['params'])
             del conf['dataset']
             del conf['test_split']
+            del conf['generator']
 
             # Metrics
             conf['metrics'] = {metric: metrics[metric] for metric in conf['metrics']}
@@ -85,8 +97,8 @@ class ConfigFactory:
             df = pd.read_csv(config['csv'])
             cuda = config['cuda']
             models = dict()
-            df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
-            df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
+            # df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
+            # df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
             if 'segmentation' in config:
                 seg_model = self.build_model(config['segmentation']['model'])
                 seg_model.load_state_dict(torch.load(config['segmentation']['state_dict']))
@@ -107,4 +119,4 @@ class ConfigFactory:
 #     model = configurer.build_model(os.path.join(model_dir, 'unet1.json'))
 #     train_params = configurer.build_train_env(model, os.path.join(train_dir, 'train_unet_local1.json'))
 #     print(train_params)
-# python train.py --model_conf=./params/models/unet1.json --train_conf=./params/trains/train_unet_local_1.json
+# python train.py --model_conf=./params/models/unet1.json --train_conf=./params/trains/train_local_1.json

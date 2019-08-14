@@ -4,6 +4,7 @@ from joblib import Parallel, delayed
 import multiprocessing as mp
 from lib.mask_utils import pred2mask, mask2rle
 import cv2
+import numpy as np
 
 
 class CleanSteelPredictor(object):
@@ -19,20 +20,22 @@ class CleanSteelPredictor(object):
         else:
             self.model.cpu()
         with torch.no_grad():
-            predicts = []
+            predicts = np.array([])
             self.model.eval()
-            for data, _ in tqdm.tqdm(self.loader, desc='Predicting: CleanSteelPredictor'):
+            for data in tqdm.tqdm(self.loader, desc='Predicting: CleanSteelPredictor'):
                 if self.cuda:
                     data = data.cuda()
                 output = self.model(data)
-                predicts += output.cpu()[0]
+                predicts = np.concatenate((predicts, output.view(-1).cpu().numpy()))
             self.df['hasDefect'] = predicts
-            clean = self.df[self.df['hasDefect'] < 0.4]
+            clean = self.df[self.df['hasDefect'] < 0.3]
+            print("{0:d} of {1:d} are clean".format(len(clean), len(self.df)))
             self.df = self.df.drop(clean.index)
-            clean['EncodedPixels'] = ' '
-            del self.df['hasDefect']
-            del clean['hasDefect']
-            return clean, self.df
+            clean = clean.reset_index()
+            self.df = self.df.reset_index()
+            clean['EncodedPixels'] = clean['EncodedPixels'].apply(lambda x: ' ')
+
+            return clean[['ImageId_ClassId', 'EncodedPixels']], self.df[['ImageId_ClassId', 'EncodedPixels']]
 
 
 class SteelSegmentation(object):
@@ -59,7 +62,7 @@ class SteelSegmentation(object):
                 rles = Parallel(n_jobs=mp.cpu_count())(delayed(self.post_process)(img) for img in masks)
                 predicts += rles
             self.df['EncodedPixels'] = predicts
-            return self.df
+            return self.df[['ImageId_ClassId', 'EncodedPixels']]
 
     def post_process(self, img):
         resized = cv2.resize(img, (1600, 256))

@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
+from torchvision import models
 import math
 
 
@@ -384,3 +385,13 @@ class DeepLabV3Plus(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
+
+
+class DenseNetSigmoid(torch.nn.Module):
+    def __init__(self, **args):
+        super(DenseNetSigmoid, self).__init__()
+        self.model = models.DenseNet(**args)
+        self.act = torch.nn.Sigmoid()
+
+    def forward(self, x):
+        return self.act(self.model(x))
