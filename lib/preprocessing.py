@@ -40,9 +40,9 @@ class ClassifierDatasetGenerator:
         images['rles'] = df.groupby(df.filename)
         images['rles'] = images['rles'].apply(lambda x: x[1][['class', 'EncodedPixels']].values)
         images['rles'] = images['rles'].apply(lambda x: list(map(lambda k: k[1], sorted(x, key=lambda val: val[0]))))
+        images['label'] = images['rles'].apply(lambda x: 1 if np.any([isinstance(t, str) for t in x]) else 0)
         test = images.sample(frac=test_split)
         train = images.drop(test.index)
-        train['label'] = train['rles'].apply(lambda x: 1 if np.any([isinstance(t, str) for t in x]) else 0)
         return test, train
 
 
