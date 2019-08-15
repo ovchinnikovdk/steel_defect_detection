@@ -1,5 +1,5 @@
 from torchvision import transforms
-from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, ShiftScaleRotate
+from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, ShiftScaleRotate, RandomCrop
 from albumentations.torch import ToTensor
 
 data_transform = transforms.Compose([
@@ -22,6 +22,7 @@ def get_transforms(phase, mean=None, std=None):
         list_transforms.extend(
             [
                 # ShiftScaleRotate(rotate_limit=3),
+                RandomCrop(256, 256),
                 HorizontalFlip(),
                 VerticalFlip()
             ]
