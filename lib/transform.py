@@ -21,14 +21,14 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                ShiftScaleRotate(rotate_limit=3),
+                # ShiftScaleRotate(rotate_limit=3),
                 HorizontalFlip(),
                 VerticalFlip()
             ]
         )
     list_transforms.extend(
         [
-            Resize(64, 400),
+            # Resize(64, 400),
             # Normalize(mean=mean, std=std, p=1),
             ToTensor(),
         ]
