@@ -1,6 +1,5 @@
-from torchvision.transforms import Normalize
 from torchvision import transforms
-from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, RandomRotate90
+from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, ShiftScaleRotate
 from albumentations.torch import ToTensor
 
 data_transform = transforms.Compose([
@@ -22,7 +21,7 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                RandomRotate90(),
+                ShiftScaleRotate(rotate_limit=3),
                 HorizontalFlip(),
                 VerticalFlip()
             ]
@@ -36,3 +35,4 @@ def get_transforms(phase, mean=None, std=None):
     )
     list_trfms = Compose(list_transforms)
     return list_trfms
+
