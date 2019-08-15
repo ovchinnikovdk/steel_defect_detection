@@ -29,7 +29,7 @@ def get_transforms(phase, mean=None, std=None):
         )
     list_transforms.extend(
         [
-            # Resize(64, 400),
+            Resize(256, 256),
             # Normalize(mean=mean, std=std, p=1),
             ToTensor(),
         ]
