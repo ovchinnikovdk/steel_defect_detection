@@ -108,7 +108,7 @@ class SteelDatasetV2(Dataset):
         if self.subset == 'train' or self.subset == 'val':
             rles = self.df['rles'].iloc[index]
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
-            masks = np.zeros((256, 1600, 4), dtype=np.int32)
+            masks = np.zeros((256, 1600, 4), dtype=np.float32)
             for i in range(len(rles)):
                 mask = rle2mask(rles[i], (1600, 256))
                 masks[:, :, i] = mask

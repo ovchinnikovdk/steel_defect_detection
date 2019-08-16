@@ -64,14 +64,20 @@ def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_
             pred = net(val_x)
             loss_out = loss(pred, val_y)
             val_loss += loss_out.item()
-            pred_y.append(pred2mask(pred.cpu()))
-            true_y.append(val_y.cpu())
+            # pred_y.append(pred2mask(pred.cpu())) #TOO MUCH MEMORY
+            # true_y.append(val_y.cpu()) #TOO MUCH MEMORY
+            # NOT PRECISE, BUT FASTER
+            for metric in metrics.keys():
+                if metric in val_score:
+                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu()), val_y.cpu()))
+                else:
+                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu()), val_y.cpu())]
             torch.cuda.empty_cache()
-        pred_y = torch.cat(pred_y, dim=0)
-        true_y = torch.cat(true_y, dim=0)
+        # pred_y = torch.cat(pred_y, dim=0)
+        # true_y = torch.cat(true_y, dim=0)
         print("Validation loss: {0:10.5f}".format(val_loss))
         for metric in metrics.keys():
-            val_score[metric] = metrics[metric](pred_y, true_y)
+            val_score[metric] = np.mean(val_score[metric]) # metrics[metric](pred_y, true_y)
         print(val_score)
         val_score_mean = np.mean(list(val_score.values()))
         if val_score_mean > max(score_history):
