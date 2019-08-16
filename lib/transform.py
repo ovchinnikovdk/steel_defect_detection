@@ -22,7 +22,7 @@ def get_transforms(phase, mean=None, std=None):
         list_transforms.extend(
             [
                 ShiftScaleRotate(rotate_limit=3),
-                # RandomCrop(256, 400),
+                RandomCrop(256, 400),
                 HorizontalFlip(),
                 VerticalFlip()
             ]

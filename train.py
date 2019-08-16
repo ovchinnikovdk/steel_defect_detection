@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from lib.configs import ConfigFactory
 from lib.mask_utils import pred2mask
 import os
-
+import json
 import torch
 import numpy as np
 import tqdm
@@ -73,13 +73,18 @@ def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_
         for metric in metrics.keys():
             val_score[metric] = metrics[metric](pred_y, true_y)
         print(val_score)
-        val_score = np.mean(list(val_score.values()))
-        if val_score > max(score_history):
+        val_score_mean = np.mean(list(val_score.values()))
+        if val_score_mean > max(score_history):
             if not os.path.exists(log_path):
                 os.mkdir(log_path)
             torch.save(net.state_dict(), os.path.join(log_path, net_version + '_best.dat'))
-        score_history.append(val_score)
-        scheduler.step(val_score)
+            with open(os.path.join(log_path, 'params.json'), 'w') as params_file:
+                json.dump({'epoch': epoch, 'lr': scheduler.state_dict(), 'metrics': val_score}, params_file)
+        score_history.append(val_score_mean)
+        with open(os.path.join(log_path, 'history.json'), 'w') as history_file:
+            json.dump(score_history, history_file)
+
+        scheduler.step(val_score_mean)
 
 
 if __name__ == '__main__':

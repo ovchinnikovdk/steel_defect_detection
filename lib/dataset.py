@@ -81,7 +81,7 @@ class SteelPredictionDataset(Dataset):
 
 
 class SteelDatasetV2(Dataset):
-    def __init__(self, base_path, df, transform=data_transform, subset="train", size=None,
+    def __init__(self, base_path, df, subset="train", size=None,
                  original_size=(256, 1600), resize_to=(64, 400)):
         super().__init__()
         if size is not None:
