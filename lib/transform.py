@@ -1,6 +1,7 @@
 from torchvision import transforms
 from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, ShiftScaleRotate, RandomCrop
 from albumentations.torch import ToTensor
+from lib.custom_crop import CustomCrop
 
 data_transform = transforms.Compose([
     transforms.Grayscale(num_output_channels=1),
@@ -21,8 +22,8 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                ShiftScaleRotate(rotate_limit=3),
-                RandomCrop(256, 400),
+                # ShiftScaleRotate(rotate_limit=3),
+                CustomCrop(256, 400),
                 HorizontalFlip(),
                 VerticalFlip()
             ]
@@ -42,4 +43,5 @@ def get_transforms(phase, mean=None, std=None):
     )
     list_trfms = Compose(list_transforms)
     return list_trfms
+
 
