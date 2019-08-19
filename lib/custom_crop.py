@@ -27,7 +27,7 @@ class CustomCrop(DualTransform):
         masks = params['mask']
         has_masks = np.where(masks > 0)
         start_positions = np.random.choice(list(zip(has_masks[0], has_masks[1])))
-        return {'h_start': 0, 'w_start': min(0, start_positions[1] / masks.shape[1] - (random.random()) / 10.)}
+        return {'h_start': 0, 'w_start': max(0, start_positions[1] / masks.shape[1] - (random.random() + 0.1) / 10.)}
 
     def apply_to_bbox(self, bbox, **params):
         return F.bbox_random_crop(bbox, self.height, self.width, **params)
