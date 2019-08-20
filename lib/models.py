@@ -396,86 +396,213 @@ class DenseNetSigmoid(torch.nn.Module):
     def forward(self, x):
         return self.act(self.model(x))
 
-import torch
-from torch import nn
-from torch.nn import functional as F
-
-import lib.extractors as extractors
 
 
-class PSPModule(nn.Module):
-    def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
-        super().__init__()
-        self.stages = []
-        self.stages = nn.ModuleList([self._make_stage(features, size) for size in sizes])
-        self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1)
-        self.relu = nn.ReLU()
+from collections import OrderedDict
+#
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
 
-    def _make_stage(self, features, size):
-        prior = nn.AdaptiveAvgPool2d(output_size=(size, size))
-        conv = nn.Conv2d(features, features, kernel_size=1, bias=False)
-        return nn.Sequential(prior, conv)
+# from .resnet import _ConvBatchNormReLU, _ResBlock
 
-    def forward(self, feats):
-        h, w = feats.size(2), feats.size(3)
-        priors = [F.upsample(input=stage(feats), size=(h, w), mode='bilinear') for stage in self.stages] + [feats]
-        bottle = self.bottleneck(torch.cat(priors, 1))
-        return self.relu(bottle)
+class _Bottleneck(nn.Module):
+    """Bottleneck Unit"""
 
-
-class PSPUpsample(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super().__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.PReLU()
+    def __init__(
+        self, in_channels, mid_channels, out_channels, stride, dilation, downsample
+    ):
+        super(_Bottleneck, self).__init__()
+        self.reduce = _ConvBatchNormReLU(in_channels, mid_channels, 1, 1, 0, 1)
+        self.conv3x3 = _ConvBatchNormReLU(
+            mid_channels, mid_channels, 3, stride, dilation, dilation
         )
+        self.increase = _ConvBatchNormReLU(
+            mid_channels, out_channels, 1, 1, 0, 1, relu=False
+        )
+        self.downsample = downsample
+        if self.downsample:
+            self.proj = _ConvBatchNormReLU(
+                in_channels, out_channels, 1, stride, 0, 1, relu=False
+            )
 
     def forward(self, x):
-        h, w = 2 * x.size(2), 2 * x.size(3)
-        p = F.upsample(input=x, size=(h, w), mode='bilinear')
-        return self.conv(p)
+        h = self.reduce(x)
+        h = self.conv3x3(h)
+        h = self.increase(h)
+        if self.downsample:
+            h += self.proj(x)
+        else:
+            h += x
+        return F.relu(h)
+
+class _ResBlock(nn.Sequential):
+    """Residual Block"""
+
+    def __init__(
+        self, n_layers, in_channels, mid_channels, out_channels, stride, dilation
+    ):
+        super(_ResBlock, self).__init__()
+        self.add_module(
+            "block1",
+            _Bottleneck(
+                in_channels, mid_channels, out_channels, stride, dilation, True
+            ),
+        )
+        for i in range(2, n_layers + 1):
+            self.add_module(
+                "block" + str(i),
+                _Bottleneck(
+                    out_channels, mid_channels, out_channels, 1, dilation, False
+                ),
+            )
+
+    def __call__(self, x):
+        return super(_ResBlock, self).forward(x)
+
+class _ConvBatchNormReLU(nn.Sequential):
+    """Convolution Unit"""
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation,
+        relu=True,
+    ):
+        super(_ConvBatchNormReLU, self).__init__()
+        self.add_module(
+            "conv",
+            nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+                dilation=dilation,
+                bias=False,
+            ),
+        )
+        self.add_module(
+            "bn", nn.BatchNorm2d(out_channels, eps=1e-5, momentum=0.95, affine=True)
+        )
+        if relu:
+            self.add_module("relu", nn.ReLU())
+
+    def forward(self, x):
+        return super(_ConvBatchNormReLU, self).forward(x)
+
+
+
+class _DilatedFCN(nn.Module):
+    """ResNet-based Dilated FCN"""
+
+    def __init__(self, n_blocks):
+        super(_DilatedFCN, self).__init__()
+        self.layer1 = nn.Sequential(
+            OrderedDict(
+                [
+                    ("conv1", _ConvBatchNormReLU(3, 64, 3, 2, 1, 1)),
+                    ("conv2", _ConvBatchNormReLU(64, 64, 3, 1, 1, 1)),
+                    ("conv3", _ConvBatchNormReLU(64, 128, 3, 1, 1, 1)),
+                    ("pool", nn.MaxPool2d(3, 2, 1)),
+                ]
+            )
+        )
+        self.layer2 = _ResBlock(n_blocks[0], 128, 64, 256, 1, 1)
+        self.layer3 = _ResBlock(n_blocks[1], 256, 128, 512, 2, 1)
+        self.layer4 = _ResBlock(n_blocks[2], 512, 256, 1024, 1, 2)
+        self.layer5 = _ResBlock(n_blocks[3], 1024, 512, 2048, 1, 4)
+
+    def forward(self, x):
+        h = self.layer1(x)
+        h = self.layer2(h)
+        h = self.layer3(h)
+        h1 = self.layer4(h)
+        h2 = self.layer5(h1)
+        if self.training:
+            return h1, h2
+        else:
+            return h2
+
+
+class _PyramidPoolModule(nn.Sequential):
+    """Pyramid Pooling Module"""
+
+    def __init__(self, in_channels, pyramids=[6, 3, 2, 1]):
+        super(_PyramidPoolModule, self).__init__()
+        out_channels = in_channels // len(pyramids)
+        self.stages = nn.Module()
+        for i, p in enumerate(pyramids):
+            self.stages.add_module(
+                "s{}".format(i),
+                nn.Sequential(
+                    OrderedDict(
+                        [
+                            ("pool", nn.AdaptiveAvgPool2d(output_size=p)),
+                            (
+                                "conv",
+                                _ConvBatchNormReLU(
+                                    in_channels, out_channels, 1, 1, 0, 1
+                                ),
+                            ),
+                        ]
+                    )
+                ),
+            )
+
+    def forward(self, x):
+        hs = [x]
+        height, width = x.size()[2:]
+        for stage in self.stages.children():
+            h = stage(x)
+            h = F.upsample(h, (height, width), mode="bilinear")
+            hs.append(h)
+        return torch.cat(hs, dim=1)
 
 
 class PSPNet(nn.Module):
-    def __init__(self, n_classes=18, sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet34',
-                 pretrained=True):
-        super().__init__()
-        self.feats = getattr(extractors, backend)(pretrained)
-        self.psp = PSPModule(psp_size, 1024, sizes)
-        self.drop_1 = nn.Dropout2d(p=0.3)
+    """Pyramid Scene Parsing Network"""
 
-        self.up_1 = PSPUpsample(1024, 256)
-        self.up_2 = PSPUpsample(256, 64)
-        self.up_3 = PSPUpsample(64, 64)
-
-        self.drop_2 = nn.Dropout2d(p=0.15)
+    def __init__(self, n_classes, n_blocks, pyramids):
+        super(PSPNet, self).__init__()
+        self.n_classes = n_classes
+        self.fcn = _DilatedFCN(n_blocks=n_blocks)
+        self.ppm = _PyramidPoolModule(in_channels=2048, pyramids=pyramids)
+        # Main branch
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1),
-            nn.LogSoftmax()
+            OrderedDict(
+                [
+                    ("conv5_4", _ConvBatchNormReLU(4096, 512, 3, 1, 1, 1)),
+                    ("drop5_4", nn.Dropout2d(p=0.1)),
+                    ("conv6", nn.Conv2d(512, n_classes, 1, stride=1, padding=0)),
+                ]
+            )
         )
-
-        self.classifier = nn.Sequential(
-            nn.Linear(deep_features_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, n_classes)
+        # Auxiliary branch
+        self.aux = nn.Sequential(
+            OrderedDict(
+                [
+                    ("conv4_aux", _ConvBatchNormReLU(1024, 256, 3, 1, 1, 1)),
+                    ("drop4_aux", nn.Dropout2d(p=0.1)),
+                    ("conv6_1", nn.Conv2d(256, n_classes, 1, stride=1, padding=0)),
+                ]
+            )
         )
 
     def forward(self, x):
-        f, class_f = self.feats(x)
-        p = self.psp(f)
-        p = self.drop_1(p)
+        if self.training:
+            aux, h = self.fcn(x)
+            aux = self.aux(aux)
+        else:
+            h = self.fcn(x)
+        h = self.ppm(h)
+        h = self.final(h)
 
-        p = self.up_1(p)
-        p = self.drop_2(p)
-
-        p = self.up_2(p)
-        p = self.drop_2(p)
-
-        p = self.up_3(p)
-        p = self.drop_2(p)
-
-        auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
-
-        return self.final(p), self.classifier(auxiliary)
+        if self.training:
+            return aux, h
+        else:
+            return h

@@ -1,5 +1,6 @@
 {
   "model" : "PSPNet",
   "n_classes" : 4,
-  "pretrained" : false
+  "n_blocks" : [3, 4, 6, 3],
+  "pyramids" : [6, 3, 2, 1]
 }
