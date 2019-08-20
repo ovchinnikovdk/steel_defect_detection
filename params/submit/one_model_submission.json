@@ -4,6 +4,7 @@
   "data_path" : "./input/severstal-steel-defect-detection/",
   "segmentation" : {
     "model" : "./params/models/unet1.json",
-    "state_dict": "./logs/UNet_best.dat"
-  }
+    "state_dict": "./logs/train_local_2_best.dat"
+  },
+  "size" : 100
 }

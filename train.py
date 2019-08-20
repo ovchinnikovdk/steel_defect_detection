@@ -30,6 +30,7 @@ def train(net, loss, metrics, train_data,
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max')
     net.train()
     score_history = [0.]
+    val_loss_history = []
     for i in range(epochs):
         print("EPOCH #" + str(i) + ' of ' + str(epochs))
         net.train()
@@ -45,10 +46,10 @@ def train(net, loss, metrics, train_data,
             optimizer.step()
             sum_loss += loss_out.item()
         print("Loss: " + str(sum_loss))
-        validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, i, net_version)
+        validate(net, val_loader, metrics, loss, score_history, val_loss_history, scheduler, gpu, log_path, i, net_version)
 
 
-def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_path, epoch, net_version):
+def validate(net, val_loader, metrics, loss, score_history, loss_history, scheduler, gpu, log_path, epoch, net_version):
     # Validating Epoch
     torch.cuda.empty_cache()
     net.eval()
@@ -80,15 +81,18 @@ def validate(net, val_loader, metrics, loss, score_history, scheduler, gpu, log_
             val_score[metric] = np.mean(val_score[metric]) # metrics[metric](pred_y, true_y)
         print(val_score)
         val_score_mean = np.mean(list(val_score.values()))
-        if val_score_mean > max(score_history):
+        if val_score_mean > max(score_history) or (val_score_mean == max(score_history) and val_loss < min(loss_history)):
             if not os.path.exists(log_path):
                 os.mkdir(log_path)
             torch.save(net.state_dict(), os.path.join(log_path, net_version + '_best.dat'))
             with open(os.path.join(log_path, 'params.json'), 'w') as params_file:
                 json.dump({'epoch': epoch, 'lr': scheduler.state_dict(), 'metrics': val_score}, params_file)
         score_history.append(val_score_mean)
-        with open(os.path.join(log_path, 'history.json'), 'w') as history_file:
+        loss_history.append(val_loss)
+        with open(os.path.join(log_path, 'score_history.json'), 'w') as history_file:
             json.dump(score_history, history_file)
+        with open(os.path.join(log_path, 'loss_history.json'), 'w') as history_file:
+            json.dump(loss_history, history_file)
 
         scheduler.step(val_score_mean)
 

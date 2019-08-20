@@ -98,6 +98,8 @@ class ConfigFactory:
         with open(json_path) as json_file:
             config = json.load(json_file)
             df = pd.read_csv(config['csv'])
+            if 'size' in config:
+                df = df.sample(config['size'])
             cuda = config['cuda']
             models = dict()
             # df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])

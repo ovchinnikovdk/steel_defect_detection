@@ -16,14 +16,14 @@ def main():
     if 'prediction' in models:
         predictor = models['prediction']
         df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
-        dataloader = DataLoader(dataset=SteelPredictionDataset(data_path, df, subset='test'), batch_size=80)
+        dataloader = DataLoader(dataset=SteelPredictionDataset(data_path, df, subset='test'), batch_size=80, num_workers=4)
         clean, df = CleanSteelPredictor(df, predictor, dataloader, cuda).call()
         result_df = clean
     if 'segmentation' in models:
         segmentation = models['segmentation']
         df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
         df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
-        dataloader = DataLoader(dataset=SteelDatasetV2(data_path, df, subset='test'), batch_size=15, num_workers=4)
+        dataloader = DataLoader(dataset=SteelDatasetV2(data_path, df, subset='test'), batch_size=3, num_workers=4)
         df = SteelSegmentation(df, segmentation, dataloader, cuda).call()
         if result_df is not None:
             print(df.head(10))
@@ -32,7 +32,7 @@ def main():
             result_df = df
 
     test_df = result_df[['ImageId_ClassId', 'EncodedPixels']]
-    test_df.head(10)
+    print(test_df.head(100))
     test_df.to_csv('submission.csv', index=False)
 
 
