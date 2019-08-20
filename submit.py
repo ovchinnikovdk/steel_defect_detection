@@ -23,7 +23,7 @@ def main():
         segmentation = models['segmentation']
         df['filename'] = df['ImageId_ClassId'].apply(lambda x: x.split('_')[0])
         df['class'] = df['ImageId_ClassId'].apply(lambda x: int(x.split('_')[1]))
-        dataloader = DataLoader(dataset=SteelDatasetV2(data_path, df, subset='test'), batch_size=80)
+        dataloader = DataLoader(dataset=SteelDatasetV2(data_path, df, subset='test'), batch_size=10)
         df = SteelSegmentation(df, segmentation, dataloader, cuda).call()
         if result_df is not None:
             print(df.head(10))
