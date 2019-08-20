@@ -16,7 +16,8 @@ architectures = {
     'unet': UNet,
     'deeplabv3plus': DeepLabV3Plus,
     'resnet': models.ResNet,
-    'densenet': DenseNetSigmoid
+    'densenet': DenseNetSigmoid,
+    'pspnet': PSPNet
 }
 
 optimizers = {

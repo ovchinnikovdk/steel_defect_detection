@@ -1,0 +1,5 @@
+{
+  "model" : "PSPNet",
+  "n_classes" : 4,
+  "pretrained" : false
+}

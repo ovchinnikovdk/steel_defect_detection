@@ -22,7 +22,7 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                # ShiftScaleRotate(rotate_limit=3),
+                ShiftScaleRotate(rotate_limit=3),
                 CustomCrop(256, 400),
                 HorizontalFlip(),
                 VerticalFlip()
