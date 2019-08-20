@@ -601,8 +601,8 @@ class PSPNet(nn.Module):
             h = self.fcn(x)
         h = self.ppm(h)
         h = self.final(h)
-
-        if self.training:
-            return aux, h
-        else:
-            return h
+        return h
+        # if self.training:
+        #     return aux, h
+        # else:
+        #     return h
