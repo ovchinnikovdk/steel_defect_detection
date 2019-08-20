@@ -81,7 +81,7 @@ class SteelPredictionDataset(Dataset):
 
 
 class SteelDatasetV2(Dataset):
-    def __init__(self, base_path, df, subset="train", size=None,
+    def __init__(self, base_path, df, transforms_func=get_transforms, subset="train", size=None,
                  original_size=(256, 1600), resize_to=(64, 400)):
         super().__init__()
         if size is not None:
@@ -90,7 +90,7 @@ class SteelDatasetV2(Dataset):
             self.df = df
         self.original_size = original_size
         self.resize_to = resize_to
-        self.transform = get_transforms(subset)
+        self.transform = transforms_func(subset)
         self.subset = subset
 
         if self.subset == "train" or self.subset == "val":
@@ -103,12 +103,12 @@ class SteelDatasetV2(Dataset):
 
     def __getitem__(self, index):
         fn = self.df['filename'].iloc[index]
-        img = cv2.imread(self.data_path + fn, 0)
-        img = img.reshape((img.shape[0], img.shape[1], 1))
+        img = cv2.imread(self.data_path + fn)
+        # img = img.reshape((img.shape[0], img.shape[1], 1))
         if self.subset == 'train' or self.subset == 'val':
             rles = self.df['rles'].iloc[index]
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
-            masks = np.zeros((256, 1600, 4), dtype=np.float32)
+            masks = np.zeros((256, 1600, 4), dtype=np.uint8)
             for i in range(len(rles)):
                 mask = rle2mask(rles[i], (1600, 256))
                 masks[:, :, i] = mask
@@ -116,7 +116,8 @@ class SteelDatasetV2(Dataset):
             # Mask shape (256, 1600, 4)
             augmented = self.transform(image=img, mask=masks)
             img, mask = augmented['image'], augmented['mask']
-            mask = mask[0].permute(2, 0, 1)
+            if isinstance(mask, torch.Tensor):
+                mask = mask[0].permute(2, 0, 1)
             return img, mask
         else:
             return self.transform(img), self.df['class'].iloc[index]

@@ -1,17 +1,9 @@
 from __future__ import absolute_import, division
 
-from types import LambdaType
-import math
 import random
-import warnings
-
-import cv2
 import numpy as np
-
 from albumentations.augmentations import functional as F
-from albumentations.augmentations.bbox_utils import union_of_bboxes, denormalize_bbox, normalize_bbox
-from albumentations.core.transforms_interface import to_tuple, DualTransform, ImageOnlyTransform, NoOp
-from albumentations.core.utils import format_args
+from albumentations.core.transforms_interface import DualTransform
 
 
 class CustomCrop(DualTransform):
@@ -26,16 +18,19 @@ class CustomCrop(DualTransform):
     def get_params_dependent_on_targets(self, params):
         masks = params['mask']
         has_masks = np.where(masks > 0)
-        start_positions = np.random.choice(list(zip(has_masks[0], has_masks[1])))
+        for_choice = np.array(has_masks[1])
+        random_w_start = random.random()
+        if len(for_choice) > 0:
+            start_positions = np.random.choice(for_choice)
+            random_w_start = (start_positions - self.width) / (masks.shape[1] - self.width) \
+                         - (random.random() + 0.1) / 10.
         return {'h_start': 0,
-                'w_start': max(0, start_positions[1] / (masks.shape[1] - self.width) - (random.random() + 0.1) / 10.)
+                'w_start': max(0, random_w_start)
                 }
-
-    def apply_to_bbox(self, bbox, **params):
-        return F.bbox_random_crop(bbox, self.height, self.width, **params)
-
-    def apply_to_keypoint(self, keypoint, **params):
-        return F.keypoint_random_crop(keypoint, self.height, self.width, **params)
 
     def get_transform_init_args_names(self):
         return ('height', 'width')
+
+    @property
+    def targets_as_params(self):
+        return ['mask']
