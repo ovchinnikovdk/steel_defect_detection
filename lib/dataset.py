@@ -120,4 +120,4 @@ class SteelDatasetV2(Dataset):
                 mask = mask[0].permute(2, 0, 1)
             return img, mask
         else:
-            return self.transform(image=img), self.df['class'].iloc[index]
+            return self.transform(image=img)['image'], self.df['class'].iloc[index]
