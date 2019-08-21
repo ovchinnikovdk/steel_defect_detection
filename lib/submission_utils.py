@@ -39,11 +39,12 @@ class CleanSteelPredictor(object):
 
 
 class SteelSegmentation(object):
-    def __init__(self, df, model, loader, cuda):
+    def __init__(self, df, model, loader, cuda, threshold=0.6):
         self.df = df
         self.model = model
         self.loader = loader
         self.cuda = cuda
+        self.threshold = threshold
 
     def call(self):
         if self.cuda:
@@ -58,7 +59,7 @@ class SteelSegmentation(object):
                     data = data.cuda()
                 output = self.model(data)
                 output = output.cpu()
-                masks = [pred2mask(mask[lab - 1]).numpy() for mask, lab in zip(output, label)]
+                masks = [pred2mask(mask[lab - 1], threshold=self.threshold).numpy() for mask, lab in zip(output, label)]
                 rles = Parallel(n_jobs=mp.cpu_count())(delayed(self.post_process)(img) for img in masks)
                 predicts += rles
             self.df['EncodedPixels'] = predicts

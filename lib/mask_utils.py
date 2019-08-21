@@ -70,7 +70,7 @@ def mask2rle(img):
     return ' '.join(str(x) for x in runs)
 
 
-def pred2mask(batch_pred):
-    batch_pred[batch_pred < 0.5] = 0
-    batch_pred[batch_pred >= 0.5] = 1
+def pred2mask(batch_pred, threshold=0.5):
+    batch_pred[batch_pred < threshold] = 0
+    batch_pred[batch_pred >= threshold] = 1
     return batch_pred

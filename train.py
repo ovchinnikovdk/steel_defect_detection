@@ -70,9 +70,9 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
             # NOT PRECISE, BUT FASTER
             for metric in metrics.keys():
                 if metric in val_score:
-                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu()), val_y.cpu()))
+                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu()))
                 else:
-                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu()), val_y.cpu())]
+                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu())]
             torch.cuda.empty_cache()
         # pred_y = torch.cat(pred_y, dim=0)
         # true_y = torch.cat(true_y, dim=0)
