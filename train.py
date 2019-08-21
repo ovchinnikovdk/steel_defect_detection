@@ -65,9 +65,9 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
             val_loss += loss_out.item()
             for metric in metrics.keys():
                 if metric in val_score:
-                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu()))
+                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu(), 0.55), val_y.cpu()))
                 else:
-                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu())]
+                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu(), 0.55), val_y.cpu())]
             torch.cuda.empty_cache()
         print("Validation loss: {0:10.5f}".format(val_loss))
         for metric in metrics.keys():
