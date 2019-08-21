@@ -53,8 +53,6 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
     # Validating Epoch
     torch.cuda.empty_cache()
     net.eval()
-    pred_y = []
-    true_y = []
     val_score = dict()
     with torch.no_grad():
         val_loss = 0.
@@ -65,17 +63,12 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
             pred = net(val_x)
             loss_out = loss(pred, val_y)
             val_loss += loss_out.item()
-            # pred_y.append(pred2mask(pred.cpu())) #TOO MUCH MEMORY
-            # true_y.append(val_y.cpu()) #TOO MUCH MEMORY
-            # NOT PRECISE, BUT FASTER
             for metric in metrics.keys():
                 if metric in val_score:
                     val_score[metric].append(metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu()))
                 else:
                     val_score[metric] = [metrics[metric](pred2mask(pred.cpu(), 0.6), val_y.cpu())]
             torch.cuda.empty_cache()
-        # pred_y = torch.cat(pred_y, dim=0)
-        # true_y = torch.cat(true_y, dim=0)
         print("Validation loss: {0:10.5f}".format(val_loss))
         for metric in metrics.keys():
             val_score[metric] = np.mean(val_score[metric]) # metrics[metric](pred_y, true_y)
