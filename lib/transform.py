@@ -1,5 +1,6 @@
 from torchvision import transforms
 from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, CoarseDropout
+import albumentations as albu
 from albumentations.torch import ToTensor
 from lib.custom_crop import CustomCrop
 
@@ -20,25 +21,40 @@ data_clf_transform = transforms.Compose([
 def get_transforms(phase, mean=None, std=None):
     list_transforms = []
     if phase == "train":
-        list_transforms.extend(
-            [
-                # ShiftScaleRotate(rotate_limit=3),
-                CoarseDropout(),
-                CustomCrop(256, 400),
-                HorizontalFlip(),
-                VerticalFlip()
-            ]
-        )
-    # if phase == 'val':
-    #     list_transforms.extend(
-    #         [
-    #             Resize(128, 800)
-    #         ]
-    #     )
+        pass
     list_transforms.extend(
         [
-            # Resize(256, 256),
-            # Normalize(mean=mean, std=std, p=1),
+            CustomCrop(256, 400),
+            albu.CoarseDropout(),
+            albu.OneOf(
+                [
+                    albu.CLAHE(p=1),
+                    albu.RandomBrightnessContrast(p=1),
+                    albu.RandomGamma(p=1),
+                ],
+                p=0.9,
+            ),
+            albu.OneOf(
+                [
+                    albu.RandomBrightnessContrast(p=1),
+                    albu.HueSaturationValue(p=1),
+                ],
+                p=0.9,
+            ),
+            albu.OneOf([
+                HorizontalFlip(),
+                VerticalFlip()
+            ])
+        ]
+    )
+    if phase == 'val':
+        list_transforms.extend(
+            [
+                Resize(128, 800)
+            ]
+        )
+    list_transforms.extend(
+        [
             ToTensor(),
         ]
     )
