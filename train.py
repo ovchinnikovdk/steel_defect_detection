@@ -25,7 +25,7 @@ def train(net, loss, metrics, train_data,
           valid_data, optimizer, gpu,
           batch_size=64, epochs=30, log_path='logs',
           net_version='dummy1'):
-    val_loader = DataLoader(valid_data, batch_size=20, num_workers=4)
+    val_loader = DataLoader(valid_data, batch_size=12, num_workers=4)
     train_loader = DataLoader(train_data, batch_size=batch_size, num_workers=4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max')
     net.train()

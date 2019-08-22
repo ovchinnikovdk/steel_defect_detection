@@ -47,12 +47,12 @@ def get_transforms(phase, mean=None, std=None):
             ])
         ]
     )
-    if phase == 'val':
-        list_transforms.extend(
-            [
-                Resize(128, 800)
-            ]
-        )
+    # if phase == 'val':
+    #     list_transforms.extend(
+    #         [
+    #             Resize(128, 800)
+    #         ]
+    #     )
     list_transforms.extend(
         [
             ToTensor(),
