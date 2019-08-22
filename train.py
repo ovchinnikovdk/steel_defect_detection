@@ -61,6 +61,8 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
                 val_x = val_x.cuda()
                 val_y = val_y.cuda()
             pred = net(val_x)
+            if isinstance(loss, torch.nn.BCEWithLogitsLoss):
+                pred = torch.nn.Sigmiod(pred)
             loss_out = loss(pred, val_y)
             val_loss += loss_out.item()
             for metric in metrics.keys():
