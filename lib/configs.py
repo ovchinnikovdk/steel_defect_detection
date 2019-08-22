@@ -29,7 +29,9 @@ optimizers = {
 losses = {
     'mse': torch.nn.MSELoss,
     'bcewithlogits': torch.nn.BCEWithLogitsLoss,
-    'bce': torch.nn.BCELoss
+    'bce': torch.nn.BCELoss,
+    'bcedice': smp.utils.losses.BCEDiceLoss,
+    'bcejaccard': smp.utils.losses.BCEJaccardLoss
 }
 
 datasets = {
