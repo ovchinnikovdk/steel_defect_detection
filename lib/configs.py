@@ -1,5 +1,6 @@
 import json
-from lib.models import *
+from lib.models.custom_models import *
+import segmentation_models_pytorch as smp
 from lib import dataset
 from lib import metrics
 from lib.preprocessing import *
@@ -17,7 +18,7 @@ architectures = {
     'deeplabv3plus': DeepLabV3Plus,
     'resnet': models.ResNet,
     'densenet': DenseNetSigmoid,
-    'pspnet': PSPNet
+    'pspnet': smp.PSPNet
 }
 
 optimizers = {

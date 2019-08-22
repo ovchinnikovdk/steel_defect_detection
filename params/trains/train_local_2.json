@@ -6,7 +6,7 @@
     }
   },
   "epochs" : 30,
-  "loss" : "bce",
+  "loss" : "bcewithlogits",
   "generator" : "segmentationdatasetgenerator",
   "dataset" : {
     "class" : "SteelDatasetV2",

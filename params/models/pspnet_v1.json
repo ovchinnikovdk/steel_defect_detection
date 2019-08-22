@@ -1,6 +1,9 @@
 {
   "model" : "PSPNet",
-  "n_classes" : 4,
-  "n_blocks" : [3, 4, 6, 3],
-  "pyramids" : [6, 3, 2, 1]
+  "classes" : 4,
+  "dropout" : 0.2,
+  "psp_use_batchnorm" : true,
+  "encoder_name" : "resnet34",
+  "encoder_weights" : "imagenet",
+  "activation" : "sigmoid"
 }
