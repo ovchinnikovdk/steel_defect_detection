@@ -21,32 +21,31 @@ data_clf_transform = transforms.Compose([
 def get_transforms(phase, mean=None, std=None):
     list_transforms = []
     if phase == "train":
-        pass
-    list_transforms.extend(
-        [
-            CustomCrop(256, 400),
-            albu.CoarseDropout(),
-            albu.OneOf(
-                [
-                    albu.CLAHE(p=1),
-                    albu.RandomBrightnessContrast(p=1),
-                    albu.RandomGamma(p=1),
-                ],
-                p=0.9,
-            ),
-            albu.OneOf(
-                [
-                    albu.RandomBrightnessContrast(p=1),
-                    albu.HueSaturationValue(p=1),
-                ],
-                p=0.9,
-            ),
-            albu.OneOf([
-                HorizontalFlip(),
-                VerticalFlip()
-            ])
-        ]
-    )
+        list_transforms.extend(
+            [
+                CustomCrop(256, 800),
+                albu.CoarseDropout(),
+                albu.OneOf(
+                    [
+                        albu.CLAHE(p=1),
+                        albu.RandomBrightnessContrast(p=1),
+                        albu.RandomGamma(p=1),
+                    ],
+                    p=0.9,
+                ),
+                albu.OneOf(
+                    [
+                        albu.RandomBrightnessContrast(p=1),
+                        albu.HueSaturationValue(p=1),
+                    ],
+                    p=0.9,
+                ),
+                albu.OneOf([
+                    HorizontalFlip(),
+                    VerticalFlip()
+                ])
+            ]
+        )
     # if phase == 'val':
     #     list_transforms.extend(
     #         [
