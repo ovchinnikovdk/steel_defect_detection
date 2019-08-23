@@ -39,7 +39,7 @@ class CleanSteelPredictor(object):
 
 
 class SteelSegmentation(object):
-    def __init__(self, df, model, loader, cuda, threshold=0.6):
+    def __init__(self, df, model, loader, cuda, threshold=0.55):
         self.df = df
         self.model = model
         self.loader = loader
@@ -57,7 +57,10 @@ class SteelSegmentation(object):
             for data, label in tqdm.tqdm(self.loader, desc='Predicting: SteelSegmentation'):
                 if self.cuda:
                     data = data.cuda()
-                output = self.model(data)
+                if hasattr(self.model, 'predict'):
+                    output = self.model.predict(data)
+                else:
+                    output = self.model(data)
                 output = output.cpu()
                 masks = [pred2mask(mask[lab - 1], threshold=self.threshold).numpy() for mask, lab in zip(output, label)]
                 rles = Parallel(n_jobs=mp.cpu_count())(delayed(self.post_process)(img) for img in masks)
