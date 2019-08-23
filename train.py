@@ -47,6 +47,9 @@ def train(net, loss, metrics, train_data,
             sum_loss += loss_out.item()
         print("Loss: " + str(sum_loss))
         validate(net, val_loader, metrics, loss, score_history, val_loss_history, scheduler, gpu, log_path, i, net_version)
+    torch.save(net.state_dict(), os.path.join(log_path, net_version + '_last.dat'))
+    with open(os.path.join(log_path, 'params_last.json'), 'w') as params_file:
+        json.dump({'lr': optimizer.state_dict()}, params_file)
 
 
 def validate(net, val_loader, metrics, loss, score_history, loss_history, scheduler, gpu, log_path, epoch, net_version):
@@ -79,8 +82,8 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
         if val_score_mean > max(score_history) or (val_score_mean == max(score_history) and val_loss < min(loss_history)):
             if not os.path.exists(log_path):
                 os.mkdir(log_path)
-            torch.save(net.state_dict(), os.path.join(log_path, net_version + '_best.dat'))
-            with open(os.path.join(log_path, 'params.json'), 'w') as params_file:
+            torch.save(net.state_dict(), os.path.join(log_path, net_version + '_' + str(epoch) + '.dat'))
+            with open(os.path.join(log_path, 'params_' + str(epoch) + '.json'), 'w') as params_file:
                 json.dump({'epoch': epoch, 'lr': scheduler.state_dict(), 'metrics': val_score}, params_file)
         score_history.append(val_score_mean)
         loss_history.append(val_loss)

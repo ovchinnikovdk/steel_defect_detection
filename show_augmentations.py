@@ -4,6 +4,8 @@ import cv2
 import matplotlib.pyplot as plt
 from albumentations import HorizontalFlip, VerticalFlip, Compose, ShiftScaleRotate
 from lib.custom_crop import CustomCrop
+import albumentations as albu
+import tqdm
 
 palet = [(249, 192, 12), (0, 185, 241), (114, 0, 218), (249, 50, 12)]
 
@@ -24,9 +26,32 @@ def example_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                CustomCrop(256, 400),
-                HorizontalFlip(),
-                VerticalFlip()
+                albu.IAAAdditiveGaussianNoise(p=0.1),
+                albu.IAAPerspective(p=0.1, scale=(0.001, 0.005)),
+                CustomCrop(256, 800),
+                # albu.CoarseDropout(),
+                albu.OneOf(
+                    [
+                        albu.CLAHE(p=1),
+                        albu.RandomBrightnessContrast(p=1),
+                        albu.RandomGamma(p=1),
+                    ],
+                    p=0.8,
+                ),
+                albu.OneOf(
+                    [
+                        albu.RandomBrightnessContrast(p=1),
+                        albu.HueSaturationValue(p=1),
+                    ],
+                    p=0.8,
+                ),
+                albu.OneOf(
+                    [
+                        HorizontalFlip(p=1),
+                        VerticalFlip(p=1)
+                    ],
+                    p=0.8
+                )
             ]
         )
     list_trfms = Compose(list_transforms)
@@ -37,7 +62,7 @@ path = './input/severstal-steel-defect-detection/'
 test, train = SegmentationDatasetGenerator().generate(path + 'train.csv', 0.1)
 train_dataset = SteelDatasetV2(path, train, transforms_func=example_transforms, size=100)
 
-for i in range(len(train_dataset)):
+for i in tqdm.tqdm(range(len(train_dataset))):
     img, mask = train_dataset[i]
     # img = img.reshape(img.shape[0], img.shape[1])
     save_mask_image('img' + str(i), img, mask)
