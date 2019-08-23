@@ -29,7 +29,13 @@ def example_transforms(phase, mean=None, std=None):
                 albu.IAAAdditiveGaussianNoise(p=0.1),
                 albu.IAAPerspective(p=0.1, scale=(0.001, 0.005)),
                 CustomCrop(256, 800),
-                # albu.CoarseDropout(),
+                albu.CoarseDropout(max_holes=30,
+                                   min_holes=5,
+                                   max_height=5,
+                                   max_width=5,
+                                   min_height=3,
+                                   min_width=3,
+                                   p=0.2),
                 albu.OneOf(
                     [
                         albu.CLAHE(p=1),
