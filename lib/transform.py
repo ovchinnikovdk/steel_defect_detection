@@ -1,5 +1,5 @@
 from torchvision import transforms
-from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, CoarseDropout
+from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, CoarseDropout, Normalize
 import albumentations as albu
 from albumentations.torch import ToTensor
 from lib.custom_crop import CustomCrop
@@ -65,6 +65,7 @@ def get_transforms(phase, mean=None, std=None):
     #     )
     list_transforms.extend(
         [
+            Normalize(),
             ToTensor(),
         ]
     )
