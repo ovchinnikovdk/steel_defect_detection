@@ -59,7 +59,14 @@ class ConfigFactory:
             conf = json.load(json_file)
             name = conf['model'].lower()
             del conf['model']
-            return architectures[name](**conf)
+            pretrained = None
+            if 'state_dict' in conf:
+                pretrained = conf['state_dict']
+                del conf['state_dict']
+            model = architectures[name](**conf)
+            if pretrained is not None:
+                model.load_state_dict(torch.load(pretrained))
+            return model
 
     def build_train_env(self, net, json_path):
         with open(json_path, 'r') as json_file:
