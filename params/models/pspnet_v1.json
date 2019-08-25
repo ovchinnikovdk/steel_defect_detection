@@ -3,7 +3,7 @@
   "classes" : 4,
   "dropout" : 0.2,
   "psp_use_batchnorm" : true,
-  "encoder_name" : "resnet34",
+  "encoder_name" : "resnet101",
   "encoder_weights" : "imagenet",
   "activation" : "sigmoid"
 }
