@@ -43,21 +43,26 @@ def pred2mask(batch_pred, threshold=0.5):
 
 
 def save_mask_image(path, imgs, true_mask, pred_mask):
+    path = os.path.join(path, 'imgs')
+    if not os.path.exists(path):
+        os.mkdir(path)
     print('Saving predicted mask into ' + path)
     palet = [(249, 192, 12), (0, 185, 241), (114, 0, 218), (249, 50, 12)]
     palet_pred = [(245, 187, 5), (0, 180, 236), (109, 0, 213), (244, 45, 7)]
-    true_mask = true_mask.cpu().numpy()
-    pred_mask = pred_mask.cpu().numpy()
-    imgs = imgs.cpu().numpy()
+    true_mask = true_mask.cpu().numpy().astype('uint8')
+    pred_mask = pred_mask.cpu().numpy().astype('uint8')
+    imgs = imgs.permute(0, 2, 3, 1).cpu().numpy()
+    print(true_mask.shape, pred_mask.shape, imgs.shape)
     for i in tqdm.tqdm(range(len(imgs)), desc='Saving imgs'):
         fig, ax = plt.subplots(figsize=(15, 15))
+        img = imgs[i, :, :, :]
         for ch in range(4):
             contours_true, _ = cv2.findContours(true_mask[i, :, :, ch], cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
             contours_pred, _ = cv2.findContours(pred_mask[i, :, :, ch], cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-            for j in range(0, len(contours_true)):
-                cv2.polylines(imgs[i], contours_true[j], True, palet[ch], 2)
-            for j in range(0, len(contours_pred)):
-                cv2.polylines(imgs[i], contours_true[j], True, palet_pred[ch], 2)
+            for j in range(len(contours_true)):
+                cv2.polylines(img, contours_true[j], True, palet[ch], 2)
+            for j in range(len(contours_pred)):
+                cv2.polylines(img, contours_pred[j], True, palet_pred[ch], 2)
         ax.set_title(str(i))
-        ax.imshow(imgs[i])
+        ax.imshow(img)
         plt.savefig(os.path.join(path, str(i) + '.png'))

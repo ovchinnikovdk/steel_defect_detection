@@ -8,6 +8,10 @@ python train.py \
 --model_conf=./params/models/unet1.json \
 --train_conf=train_local_1.json
 ```
+Or:
+```shell script
+python train.py --model_conf=./params/models/pspnet_v1.json --train_conf=./params/trains/train_local_2.json
+```
 
 For making predictions:
 ```shell script

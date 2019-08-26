@@ -22,5 +22,6 @@
   "metrics" : [
     "dice"
   ],
-  "log_path": "logs"
+  "log_path": "logs",
+  "show_predictions" : true
 }
