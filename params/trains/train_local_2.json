@@ -23,5 +23,5 @@
     "dice"
   ],
   "log_path": "logs",
-  "show_predictions" : true
+  "show_predictions" : false
 }

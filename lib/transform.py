@@ -23,9 +23,9 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                albu.IAAAdditiveGaussianNoise(p=0.2),
-                albu.IAAPerspective(p=0.2, scale=(0.001, 0.005)),
-                CustomCrop(256, 800),
+                # albu.IAAAdditiveGaussianNoise(p=0.2),
+                # albu.IAAPerspective(p=0.2, scale=(0.001, 0.005)),
+                CustomCrop(256, 256),
                 albu.CoarseDropout(max_holes=30,
                                    min_holes=5,
                                    max_height=5,
@@ -39,21 +39,21 @@ def get_transforms(phase, mean=None, std=None):
                         albu.RandomBrightnessContrast(p=1),
                         albu.RandomGamma(p=1),
                     ],
-                    p=0.8,
+                    p=0.6,
                 ),
                 albu.OneOf(
                     [
                         albu.RandomBrightnessContrast(p=1),
                         albu.HueSaturationValue(p=1),
                     ],
-                    p=0.8,
+                    p=0.6,
                 ),
                 albu.OneOf(
                     [
                         HorizontalFlip(p=1),
                         VerticalFlip(p=1)
                     ],
-                    p=0.9
+                    p=0.7
                 )
             ]
         )
@@ -71,5 +71,4 @@ def get_transforms(phase, mean=None, std=None):
     )
     list_trfms = Compose(list_transforms)
     return list_trfms
-
 

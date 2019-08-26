@@ -1,6 +1,6 @@
 {
   "model" : "Unet2",
-  "encoder_name" : "resnet101",
+  "encoder_name" : "resnet34",
   "encoder_weights": null,
   "classes": 4
 }
