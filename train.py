@@ -65,6 +65,8 @@ def train(net, loss, metrics, train_data,
 
 def validate(net, val_loader, metrics, loss, score_history, loss_history, scheduler, gpu, log_path, epoch, net_version, show=False):
     # Validating Epoch
+    if not os.path.exists(log_path):
+        os.mkdir(log_path)
     torch.cuda.empty_cache()
     net.eval()
     val_score = dict()
@@ -94,8 +96,6 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
         print(val_score)
         val_score_mean = np.mean(list(val_score.values()))
         if val_score_mean > max(score_history) or (val_score_mean == max(score_history) and val_loss < min(loss_history)):
-            if not os.path.exists(log_path):
-                os.mkdir(log_path)
             torch.save(net.state_dict(), os.path.join(log_path, net_version + '_best.dat'))
             with open(os.path.join(log_path, 'params_best.json'), 'w') as params_file:
                 json.dump({'epoch': epoch, 'lr': scheduler.state_dict(), 'metrics': val_score}, params_file)

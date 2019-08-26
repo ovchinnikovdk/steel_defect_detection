@@ -51,7 +51,7 @@ def save_mask_image(path, imgs, true_mask, pred_mask):
     palet_pred = [(245, 187, 5), (0, 180, 236), (109, 0, 213), (244, 45, 7)]
     true_mask = true_mask.cpu().numpy().astype('uint8')
     pred_mask = pred_mask.cpu().numpy().astype('uint8')
-    imgs = imgs.permute(0, 2, 3, 1).cpu().numpy()
+    imgs = (imgs.permute(0, 2, 3, 1).cpu().numpy() * 255).astype('uint8')
     print(true_mask.shape, pred_mask.shape, imgs.shape)
     for i in tqdm.tqdm(range(len(imgs)), desc='Saving imgs'):
         fig, ax = plt.subplots(figsize=(15, 15))
