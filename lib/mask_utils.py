@@ -1,43 +1,9 @@
 import numpy as np
-import torch
+import matplotlib.pyplot as plt
+import cv2
+import os
+import tqdm
 
-
-# def rle2mask(rle, img_shape):
-#     width = img_shape[0]
-#     height = img_shape[1]
-#
-#     mask = np.zeros(width * height).astype(np.uint8)
-#     if not isinstance(rle, str):
-#         return np.flipud(np.rot90(mask.reshape(height, width), k=1))
-#     array = np.asarray([int(x) for x in rle.split()])
-#     starts = array[0::2]
-#     lengths = array[1::2]
-#
-#     current_position = 0
-#     for index, start in enumerate(starts):
-#         mask[int(start):int(start + lengths[index])] = 1
-#         current_position += lengths[index]
-#
-#     return np.flipud(np.rot90(mask.reshape(height, width), k=1))
-
-
-# def mask2rle(img):
-#     tmp = np.rot90(np.flipud(img), k=3)
-#     rle = []
-#     last_color = 0;
-#     start_pos = 0
-#     end_pos = 0
-#
-#     tmp = tmp.reshape(-1, 1)
-#     for i in range(len(tmp)):
-#         if (last_color == 0) and tmp[i] > 0:
-#             start_pos = i
-#             last_color = 1
-#         elif (last_color == 1) and (tmp[i] == 0):
-#             end_pos = i-1
-#             last_color = 0
-#             rle.append(str(start_pos) + ' ' + str(end_pos - start_pos + 1))
-#     return " ".join(rle)
 
 def rle2mask(mask_rle, shape=(1600, 256)):
     '''
@@ -74,3 +40,24 @@ def pred2mask(batch_pred, threshold=0.5):
     batch_pred[batch_pred < threshold] = 0
     batch_pred[batch_pred >= threshold] = 1
     return batch_pred
+
+
+def save_mask_image(path, imgs, true_mask, pred_mask):
+    print('Saving predicted mask into ' + path)
+    palet = [(249, 192, 12), (0, 185, 241), (114, 0, 218), (249, 50, 12)]
+    palet_pred = [(245, 187, 5), (0, 180, 236), (109, 0, 213), (244, 45, 7)]
+    true_mask = true_mask.cpu().numpy()
+    pred_mask = pred_mask.cpu().numpy()
+    imgs = imgs.cpu().numpy()
+    for i in tqdm.tqdm(range(len(imgs)), desc='Saving imgs'):
+        fig, ax = plt.subplots(figsize=(15, 15))
+        for ch in range(4):
+            contours_true, _ = cv2.findContours(true_mask[i, :, :, ch], cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+            contours_pred, _ = cv2.findContours(pred_mask[i, :, :, ch], cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+            for j in range(0, len(contours_true)):
+                cv2.polylines(imgs[i], contours_true[j], True, palet[ch], 2)
+            for j in range(0, len(contours_pred)):
+                cv2.polylines(imgs[i], contours_true[j], True, palet_pred[ch], 2)
+        ax.set_title(str(i))
+        ax.imshow(imgs[i])
+        plt.savefig(os.path.join(path, str(i) + '.png'))

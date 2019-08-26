@@ -1,7 +1,7 @@
 import argparse
 from torch.utils.data import DataLoader
 from lib.configs import ConfigFactory
-from lib.mask_utils import pred2mask
+from lib.mask_utils import pred2mask, save_mask_image
 import os
 import json
 import torch
@@ -24,7 +24,7 @@ def main():
 def train(net, loss, metrics, train_data,
           valid_data, optimizer, gpu,
           batch_size=64, epochs=30, log_path='logs',
-          net_version='dummy1'):
+          net_version='dummy1', show_predictions=False):
     val_loader = DataLoader(valid_data, batch_size=12, num_workers=4)
     train_loader = DataLoader(train_data, batch_size=batch_size, num_workers=4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max')
@@ -46,13 +46,24 @@ def train(net, loss, metrics, train_data,
             optimizer.step()
             sum_loss += loss_out.item()
         print("Loss: " + str(sum_loss))
-        validate(net, val_loader, metrics, loss, score_history, val_loss_history, scheduler, gpu, log_path, i, net_version)
+        validate(net,
+                 val_loader,
+                 metrics,
+                 loss,
+                 score_history,
+                 val_loss_history,
+                 scheduler,
+                 gpu,
+                 log_path,
+                 i,
+                 net_version,
+                 show_predictions)
     torch.save(net.state_dict(), os.path.join(log_path, net_version + '_last.dat'))
     with open(os.path.join(log_path, 'params_last.json'), 'w') as params_file:
         json.dump({'lr': optimizer.state_dict()}, params_file)
 
 
-def validate(net, val_loader, metrics, loss, score_history, loss_history, scheduler, gpu, log_path, epoch, net_version):
+def validate(net, val_loader, metrics, loss, score_history, loss_history, scheduler, gpu, log_path, epoch, net_version, show=False):
     # Validating Epoch
     torch.cuda.empty_cache()
     net.eval()
@@ -64,15 +75,18 @@ def validate(net, val_loader, metrics, loss, score_history, loss_history, schedu
                 val_x = val_x.cuda()
                 val_y = val_y.cuda()
             pred = net(val_x)
-            if isinstance(loss, torch.nn.BCEWithLogitsLoss):
+            if isinstance(loss, torch.nn.BCEWithLogitsLoss) or hasattr(net, 'predict'):
                 pred = torch.nn.Sigmoid()(pred)
             loss_out = loss(pred, val_y)
             val_loss += loss_out.item()
+            pred = pred2mask(pred.cpu(), 0.5)
+            if show:
+                save_mask_image(log_path, val_x, val_y, pred)
             for metric in metrics.keys():
                 if metric in val_score:
-                    val_score[metric].append(metrics[metric](pred2mask(pred.cpu(), 0.55), val_y.cpu()))
+                    val_score[metric].append(metrics[metric](pred, val_y.cpu()))
                 else:
-                    val_score[metric] = [metrics[metric](pred2mask(pred.cpu(), 0.55), val_y.cpu())]
+                    val_score[metric] = [metrics[metric](pred, val_y.cpu())]
             torch.cuda.empty_cache()
         print("Validation loss: {0:10.5f}".format(val_loss))
         for metric in metrics.keys():
