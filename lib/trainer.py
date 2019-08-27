@@ -64,7 +64,7 @@ class TrainRunner(object):
             score = np.mean(list((val_score.values())))
             if max(self.score_history) < score:
                 print(f"Saving new best model, score: {score}")
-                params = {'score': score, 'epoch': self.current_epoch, 'optim': self.optimizer.state_dict()}
+                params = {'score': score, 'epoch': self.current_epoch}
                 self.save_state(params, 'best')
         print(f"Loss ({phase}): " + str(sum_loss))
         return sum_loss
