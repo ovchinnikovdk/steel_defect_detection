@@ -23,9 +23,9 @@ def get_transforms(phase, mean=None, std=None):
     if phase == "train":
         list_transforms.extend(
             [
-                # albu.IAAAdditiveGaussianNoise(p=0.2),
-                # albu.IAAPerspective(p=0.2, scale=(0.001, 0.005)),
-                CustomCrop(256, 256),
+                albu.IAAAdditiveGaussianNoise(p=0.2),
+                albu.IAAPerspective(p=0.2, scale=(0.001, 0.005)),
+                CustomCrop(256, 1200),
                 albu.CoarseDropout(max_holes=30,
                                    min_holes=5,
                                    max_height=5,
