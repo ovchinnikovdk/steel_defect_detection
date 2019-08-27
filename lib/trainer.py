@@ -58,7 +58,7 @@ class TrainRunner(object):
                     for metric in self.metrics.keys():
                         val_score[metric] = np.mean(val_score[metric])
                     print(val_score)
-                    score = np.mean(val_score.values())
+                    score = np.mean(list((val_score.values())))
                     if max(self.score_history) < score:
                         print(f"Saving new best model, score: {score}")
                         params = {'score': score, 'epoch': self.current_epoch, 'optim': self.optimizer.state_dict()}
