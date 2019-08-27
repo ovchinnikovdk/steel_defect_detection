@@ -36,7 +36,7 @@ class TrainRunner(object):
                 if self.gpu:
                     x = x.cuda()
                     y = y.cuda()
-                output = self.net(x.no_grad())
+                output = self.net(x)
                 loss_out = self.loss(output, y)
                 if phase == 'train':
                     loss_out.backward()
