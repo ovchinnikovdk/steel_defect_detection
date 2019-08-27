@@ -80,6 +80,6 @@ class TrainRunner(object):
 
     def save_state(self, params, reason):
         torch.save(self.net.state_dict(), os.path.join(self.log_path, self.net_name + f"_{reason}.dat"))
-        with open(os.path.join(self.log_path, f"params_{reason}.json")) as json_file:
+        with open(os.path.join(self.log_path, f"params_{reason}.json"), 'w') as json_file:
             json.dump(params, json_file)
 
