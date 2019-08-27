@@ -7,7 +7,7 @@ import json
 
 
 class TrainRunner(object):
-    def __init__(self, net, train_loader, val_loader, loss, lr, metrics, log_path, net_name, use_gpu=True):
+    def __init__(self, net, train_loader, val_loader, loss, lr, metrics, log_path, net_name, use_gpu=True, show=False):
         self.net = net
         self.phases = ['train', 'validation']
         self.loaders = {'train': train_loader, 'validation': val_loader}
@@ -21,6 +21,7 @@ class TrainRunner(object):
             os.mkdir(log_path)
         self.net_name = net_name
         self.gpu = use_gpu
+        self.show = show
         self.current_epoch = 0
         self.score_history = [0.]
 
