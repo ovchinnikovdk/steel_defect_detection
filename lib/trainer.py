@@ -55,16 +55,17 @@ class TrainRunner(object):
                             val_score[metric].append(self.metrics[metric](pred, y.cpu()))
                         else:
                             val_score[metric] = [self.metrics[metric](pred, y.cpu())]
-                    for metric in self.metrics.keys():
-                        val_score[metric] = np.mean(val_score[metric])
-                    print(val_score)
-                    score = np.mean(list((val_score.values())))
-                    if max(self.score_history) < score:
-                        print(f"Saving new best model, score: {score}")
-                        params = {'score': score, 'epoch': self.current_epoch, 'optim': self.optimizer.state_dict()}
-                        self.save_state(params, 'best')
-                    torch.cuda.empty_cache()
+                torch.cuda.empty_cache()
                 sum_loss += loss_out.item()
+        if phase != 'train':
+            for metric in self.metrics.keys():
+                val_score[metric] = np.mean(val_score[metric])
+            print(val_score)
+            score = np.mean(list((val_score.values())))
+            if max(self.score_history) < score:
+                print(f"Saving new best model, score: {score}")
+                params = {'score': score, 'epoch': self.current_epoch, 'optim': self.optimizer.state_dict()}
+                self.save_state(params, 'best')
         print(f"Loss ({phase}): " + str(sum_loss))
         return sum_loss
 
