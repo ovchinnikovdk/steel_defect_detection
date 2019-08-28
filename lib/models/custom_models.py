@@ -371,6 +371,9 @@ class DeepLabV3Plus(nn.Module):
 
         return x
 
+    def predict(self):
+        pass
+
     def freeze_bn(self):
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
