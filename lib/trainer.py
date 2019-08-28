@@ -13,6 +13,7 @@ class TrainRunner(object):
         self.loaders = {'train': train_loader, 'validation': val_loader}
         self.loss = loss
         self.acc_steps = 32 // self.loaders['train'].batch_size
+        self.acc_steps = self.acc_steps if self.acc_steps != 0 else 1
         self.lr = lr
         self.optimizer = torch.optim.Adam(net.parameters(), lr=lr)
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=3, verbose=True)
