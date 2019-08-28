@@ -12,6 +12,7 @@ class TrainRunner(object):
         self.phases = ['train', 'validation']
         self.loaders = {'train': train_loader, 'validation': val_loader}
         self.loss = loss
+        self.acc_steps = 32 // self.loaders['train'].batch_size
         self.lr = lr
         self.optimizer = torch.optim.Adam(net.parameters(), lr=lr)
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", patience=3, verbose=True)
@@ -41,8 +42,9 @@ class TrainRunner(object):
                 loss_out = self.loss(output, y)
                 if phase == 'train':
                     loss_out.backward()
-                    self.optimizer.step()
-                    self.optimizer.zero_grad()
+                    if (self.current_epoch + 1) % self.acc_steps == 0:
+                        self.optimizer.step()
+                        self.optimizer.zero_grad()
                 else:
                     val_score = dict()
                     if isinstance(self.loss, torch.nn.BCEWithLogitsLoss) or hasattr(self.net, 'predict'):
@@ -62,6 +64,7 @@ class TrainRunner(object):
                 val_score[metric] = np.mean(val_score[metric])
             print(val_score)
             score = np.mean(list((val_score.values())))
+            self.score_history.append(score)
             if max(self.score_history) < score:
                 print(f"Saving new best model, score: {score}")
                 params = {'score': score, 'epoch': self.current_epoch}
@@ -70,13 +73,13 @@ class TrainRunner(object):
         return sum_loss
 
     def run(self, n_epochs):
+        losses = {'train': [], 'validation': []}
         for epoch in range(n_epochs):
             self.current_epoch = epoch
-            losses = {'train': [], 'validation': []}
             for phase in self.phases:
                 losses[phase].append(self.iterate(phase))
             self.scheduler.step(losses['validation'][-1], self.current_epoch)
-            self.save_state({'scores': self.score_history, 'losses': losses}, 'last')
+        self.save_state({'scores': self.score_history, 'losses': losses}, 'last')
 
     def save_state(self, params, reason):
         torch.save(self.net.state_dict(), os.path.join(self.log_path, self.net_name + f"_{reason}.dat"))
