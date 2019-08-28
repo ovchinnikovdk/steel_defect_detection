@@ -34,7 +34,7 @@ class TrainRunner(object):
             self.net.eval()
         sum_loss = 0
         self.optimizer.zero_grad()
-        for itr, (x, y) in tqdm.tqdm(enumerate(self.loaders[phase]), desc=f"Epoch #{self.current_epoch}, Phase: {phase}"):
+        for itr, (x, y) in enumerate(tqdm.tqdm(self.loaders[phase], desc=f"Epoch #{self.current_epoch}, Phase: {phase}")):
             with torch.set_grad_enabled(phase == 'train'):
                 if self.gpu:
                     x = x.cuda()
