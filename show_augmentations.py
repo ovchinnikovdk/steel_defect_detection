@@ -60,12 +60,13 @@ def example_transforms(phase, mean=None, std=None):
                 )
             ]
         )
-    list_trfms = Compose(list_transforms)
+    list_trfms = Compose([HorizontalFlip(p=0)])  # Compose(list_transforms)
     return list_trfms
 
 
 path = './input/severstal-steel-defect-detection/'
-test, train = SegmentationDatasetGenerator().generate(path + 'train.csv', 0.1)
+csv = 'submission.csv'
+test, train = SegmentationDatasetGenerator().generate(csv, 0.1)
 train_dataset = SteelDatasetV2(path, train, transforms_func=example_transforms, size=100)
 
 for i in tqdm.tqdm(range(len(train_dataset))):
