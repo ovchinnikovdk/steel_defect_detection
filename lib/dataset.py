@@ -111,7 +111,7 @@ class SteelDatasetV2(Dataset):
             masks = np.zeros((256, 1600, 5), dtype=np.uint8)
             for i in range(len(rles)):
                 mask = rle2mask(rles[i], (1600, 256))
-                masks[:, :, i] = mask
+                masks[:, :, i + 1] = mask
                 masks[:, :, 0] = masks[:, :, 0] - mask
             masks[masks < 0] = 0.
             # mask = np.concatenate(masks, axis=0)
