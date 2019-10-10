@@ -108,10 +108,12 @@ class SteelDatasetV2(Dataset):
         if self.subset == 'train' or self.subset == 'val':
             rles = self.df['rles'].iloc[index]
             assert len(rles) == 4, 'Need to be 4 classes for an image' + str(self.df['filename'].iloc[index])
-            masks = np.zeros((256, 1600, 4), dtype=np.uint8)
+            masks = np.zeros((256, 1600, 5), dtype=np.uint8)
             for i in range(len(rles)):
                 mask = rle2mask(rles[i], (1600, 256))
                 masks[:, :, i] = mask
+                masks[:, :, 0] = masks[:, :, 0] - mask
+            masks[masks < 0] = 0.
             # mask = np.concatenate(masks, axis=0)
             # Mask shape (256, 1600, 4)
             augmented = self.transform(image=img, mask=masks)
@@ -119,6 +121,7 @@ class SteelDatasetV2(Dataset):
             if isinstance(mask, torch.Tensor):
                 mask = mask[0].permute(2, 0, 1)
             mask[mask > 0] = 1.
+
             return img, mask
         else:
             return self.transform(img), self.df['class'].iloc[index]

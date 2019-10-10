@@ -1,7 +1,7 @@
 from torchvision import transforms
 from albumentations import HorizontalFlip, VerticalFlip, Resize, Compose, CoarseDropout, Normalize
 import albumentations as albu
-from albumentations.pytorch import ToTensorV2
+from albumentations.pytorch import ToTensor
 from lib.custom_crop import CustomCrop
 
 data_transform = transforms.Compose([
@@ -66,7 +66,7 @@ def get_transforms(phase, mean=None, std=None):
     list_transforms.extend(
         [
             Normalize(),
-            ToTensorV2(),
+            ToTensor(),
         ]
     )
     list_trfms = Compose(list_transforms)

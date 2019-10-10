@@ -7,12 +7,12 @@ from lib.custom_crop import CustomCrop
 import albumentations as albu
 import tqdm
 
-palet = [(249, 192, 12), (0, 185, 241), (114, 0, 218), (249, 50, 12)]
+palet = [(50, 50, 50), (249, 192, 12), (0, 185, 241), (114, 0, 218), (249, 50, 12)]
 
 
 def save_mask_image(name, img, mask):
     fig, ax = plt.subplots(figsize=(15, 15))
-    for ch in range(4):
+    for ch in range(5):
         contours, _ = cv2.findContours(mask[:, :, ch], cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         for i in range(0, len(contours)):
             cv2.polylines(img, contours[i], True, palet[ch], 2)
